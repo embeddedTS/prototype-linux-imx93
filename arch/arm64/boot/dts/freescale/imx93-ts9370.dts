@@ -62,6 +62,22 @@
 		};
 	};
 
+	reg_can1_sw5v2: regulator-can1-en {
+		compatible = "regulator-fixed";
+		regulator-name = "EN_CAN1_N";
+		regulator-min-microvolt = <5200000>;
+		regulator-max-microvolt = <5200000>;
+		gpio = <&fpga_gpio1 1 GPIO_ACTIVE_LOW>;
+	};
+
+	reg_can2_sw5v2: regulator-can2-en {
+		compatible = "regulator-fixed";
+		regulator-name = "EN_CAN2_N";
+		regulator-min-microvolt = <5200000>;
+		regulator-max-microvolt = <5200000>;
+		gpio = <&fpga_gpio1 2 GPIO_ACTIVE_LOW>;
+	};
+
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -171,6 +187,20 @@
 			eee-broken-1000t;
 		};
 	};
+};
+
+&flexcan1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan1>;
+	xceiver-supply = <&reg_can1_sw5v2>;
+	status = "okay";
+};
+
+&flexcan2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan2>;
+	xceiver-supply = <&reg_can2_sw5v2>;
+	status = "okay";
 };
 
 &lcdif {
@@ -510,8 +540,6 @@
 			MX93_PAD_SAI1_TXC__GPIO1_IO12			0x282 /* I2S_1 */
 			MX93_PAD_SAI1_TXD0__GPIO1_IO13			0x282 /* SAI1_TXD0 */
 			MX93_PAD_SAI1_RXD0__GPIO1_IO14			0x282 /* I2S_2 */
-			MX93_PAD_PDM_CLK__GPIO1_IO08			0x282 /* CAN1_TXD */
-			MX93_PAD_PDM_BIT_STREAM0__GPIO1_IO09		0x282 /* CAN1_RXD_3V */
 			MX93_PAD_PDM_BIT_STREAM1__GPIO1_IO10		0x282 /* SPARE_1 */
 			MX93_PAD_GPIO_IO03__GPIO2_IO03			0x282 /* GPIO_03 */
 			MX93_PAD_GPIO_IO16__GPIO2_IO16			0x282 /* GPIO_16 */
@@ -567,6 +595,22 @@
 			MX93_PAD_ENET1_TD3__ENET_QOS_RGMII_TD3			0x57e
 			MX93_PAD_ENET1_TXC__CCM_ENET_QOS_CLOCK_GENERATE_TX_CLK	0x5fe
 			MX93_PAD_ENET1_TX_CTL__ENET_QOS_RGMII_TX_CTL		0x57e
+		>;
+	};
+
+	/* CAN1 is taken from micfil/i2s audio */
+	pinctrl_flexcan1: flexcan1grp {
+		fsl,pins = <
+			MX93_PAD_PDM_CLK__CAN1_TX       	0x139e
+			MX93_PAD_PDM_BIT_STREAM0__CAN1_RX	0x139e
+		>;
+	};
+
+	/* JTAG_CPU_TDI & TDO are unavailable when CAN2 is configured */
+	pinctrl_flexcan2: flexcan2grp {
+		fsl,pins = <
+			MX93_PAD_DAP_TDI__CAN2_TX       	0x139e
+			MX93_PAD_DAP_TDO_TRACESWO__CAN2_RX	0x139e
 		>;
 	};
 
