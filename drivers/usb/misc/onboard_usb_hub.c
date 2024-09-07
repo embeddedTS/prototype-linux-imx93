@@ -5,6 +5,7 @@
  * Copyright (c) 2022, Google LLC
  */
 
+#include <linux/clk.h>
 #include <linux/device.h>
 #include <linux/export.h>
 #include <linux/gpio/consumer.h>
@@ -49,16 +50,24 @@ struct onboard_hub {
 	bool going_away;
 	struct list_head udev_list;
 	struct mutex lock;
+	struct clk *clk;
 };
 
 static int onboard_hub_power_on(struct onboard_hub *hub)
 {
 	int err;
 
+	err = clk_prepare_enable(hub->clk);
+	if (err) {
+		dev_err(hub->dev, "failed to enable clock: %pe\n",
+			ERR_PTR(err));
+		return err;
+	}
+
 	err = regulator_enable(hub->vdd);
 	if (err) {
 		dev_err(hub->dev, "failed to enable regulator: %d\n", err);
-		return err;
+		goto disable_clk;
 	}
 
 	fsleep(hub->pdata->reset_us);
@@ -67,6 +76,10 @@ static int onboard_hub_power_on(struct onboard_hub *hub)
 	hub->is_powered_on = true;
 
 	return 0;
+
+disable_clk:
+	clk_disable_unprepare(hub->clk);
+	return err;
 }
 
 static int onboard_hub_power_off(struct onboard_hub *hub)
@@ -80,6 +93,8 @@ static int onboard_hub_power_off(struct onboard_hub *hub)
 		dev_err(hub->dev, "failed to disable regulator: %d\n", err);
 		return err;
 	}
+
+	clk_disable_unprepare(hub->clk);
 
 	hub->is_powered_on = false;
 
@@ -148,7 +163,6 @@ static int onboard_hub_add_usbdev(struct onboard_hub *hub, struct usb_device *ud
 		err = -ENOMEM;
 		goto error;
 	}
-
 	node->udev = udev;
 
 	list_add(&node->list, &hub->udev_list);
@@ -157,7 +171,6 @@ static int onboard_hub_add_usbdev(struct onboard_hub *hub, struct usb_device *ud
 
 	get_udev_link_name(udev, link_name, sizeof(link_name));
 	WARN_ON(sysfs_create_link(&hub->dev->kobj, &udev->dev.kobj, link_name));
-
 	return 0;
 
 error:
@@ -249,6 +262,11 @@ static int onboard_hub_probe(struct platform_device *pdev)
 	hub->vdd = devm_regulator_get(dev, "vdd");
 	if (IS_ERR(hub->vdd))
 		return PTR_ERR(hub->vdd);
+
+	hub->clk = devm_clk_get_optional(dev, NULL);
+	if (IS_ERR(hub->clk))
+		return dev_err_probe(dev, PTR_ERR(hub->clk),
+				     "failed to get clock\n");
 
 	hub->reset_gpio = devm_gpiod_get_optional(dev, "reset",
 						  GPIOD_OUT_HIGH);

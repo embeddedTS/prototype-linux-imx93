@@ -247,7 +247,7 @@
 
 #define DRIVER_NAME	"fsl-lpuart"
 #define DEV_NAME	"ttyLP"
-#define UART_NR		6
+#define UART_NR		8
 
 /* IMX lpuart has four extra unused regs located at the beginning */
 #define IMX_REG_OFF	0x10
@@ -2973,6 +2973,7 @@ static int lpuart_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "serial%d out of range\n", ret);
 		return -EINVAL;
 	}
+        dev_info(&pdev->dev, "Assigned serial%d (out of up to %lu)\n", ret, ARRAY_SIZE(lpuart_ports));
 	sport->port.line = ret;
 
 	ret = lpuart_enable_clks(sport);

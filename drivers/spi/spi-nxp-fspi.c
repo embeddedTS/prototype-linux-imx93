@@ -86,6 +86,11 @@
 #define FSPI_MCR0_MDIS			BIT(1)
 #define FSPI_MCR0_SWRST			BIT(0)
 
+#define FSPI_RXCLKSRC_RD_LOOP		0
+#define FSPI_RXCLKSRC_DQS_LOOP		BIT(0)
+#define FSPI_RXCLKSRC_SCLK_LOOP		BIT(1)
+#define FSPI_RXCLKSRC_DQS		BIT(2)
+
 #define FSPI_MCR1			0x04
 #define FSPI_MCR1_SEQ_TIMEOUT(x)	((x) << 16)
 #define FSPI_MCR1_AHB_TIMEOUT(x)	(x)
@@ -94,6 +99,7 @@
 #define FSPI_MCR2_IDLE_WAIT(x)		((x) << 24)
 #define FSPI_MCR2_SAMEDEVICEEN		BIT(15)
 #define FSPI_MCR2_CLRLRPHS		BIT(14)
+#define FSPI_MCR2_CLRAHBBUFOPT		BIT(11)
 #define FSPI_MCR2_ABRDATSZ		BIT(8)
 #define FSPI_MCR2_ABRLEARN		BIT(7)
 #define FSPI_MCR2_ABR_READ		BIT(6)
@@ -105,6 +111,7 @@
 #define FSPI_MCR2_ABR_CMD		BIT(0)
 
 #define FSPI_AHBCR			0x0c
+#define FSPI_AHBCR_READSZALIGN		BIT(10)
 #define FSPI_AHBCR_RDADDROPT		BIT(6)
 #define FSPI_AHBCR_PREF_EN		BIT(5)
 #define FSPI_AHBCR_BUFF_EN		BIT(4)
@@ -154,6 +161,8 @@
 #define FSPI_AHBRX_BUF5CR0		0x34
 #define FSPI_AHBRX_BUF6CR0		0x38
 #define FSPI_AHBRX_BUF7CR0		0x3C
+#define FSPI_AHBRXBUF0CR7_MSTRID(x)	((x) << 16)
+#define FSPI_AHBRXBUF0CR7_BUFSZ(x)	((x) << 0)
 #define FSPI_AHBRXBUF0CR7_PREF		BIT(31)
 
 #define FSPI_AHBRX_BUF0CR1		0x40
@@ -192,6 +201,8 @@
 #define FSPI_FLSHXCR2_AWRSEQI_SHIFT	8
 #define FSPI_FLSHXCR2_ARDSEQN_SHIFT	5
 #define FSPI_FLSHXCR2_ARDSEQI_SHIFT	0
+
+#define FSPI_FLSHACR4			0x94
 
 #define FSPI_IPCR0			0xA0
 
@@ -392,6 +403,7 @@ struct nxp_fspi {
 	u32 memmap_start;
 	u32 memmap_len;
 	bool individual_mode;
+	bool ahb_bus_only;
 	struct clk *clk, *clk_en;
 	struct device *dev;
 	struct completion c;
@@ -441,6 +453,25 @@ static irqreturn_t nxp_fspi_irq_handler(int irq, void *dev_id)
 	/* clear interrupt */
 	reg = fspi_readl(f, f->iobase + FSPI_INTR);
 	fspi_writel(f, FSPI_INTR_IPCMDDONE, f->iobase + FSPI_INTR);
+
+	if (reg & FSPI_INTR_SCLKSBWR)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_SCLKSBWR\n");
+	if (reg & FSPI_INTR_SCLKSBRD)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_SCLKSBRD\n");
+	if (reg & FSPI_INTR_DATALRNFL)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_DATALRNFL\n");
+	if (reg & FSPI_INTR_IPTXWE)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_IPTXWE\n");
+	if (reg & FSPI_INTR_IPRXWA)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_IPRXWA\n");
+	if (reg & FSPI_INTR_AHBCMDERR)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_AHBCMDERR\n");
+	if (reg & FSPI_INTR_IPCMDERR)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_IPCMDERR\n");
+	if (reg & FSPI_INTR_AHBCMDGE)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_AHBCMDGE\n");
+	if (reg & FSPI_INTR_IPCMDGE)
+		dev_info(f->dev, "FSL SPI: FSPI_INTR_IPCMDGE\n");
 
 	if (reg & FSPI_INTR_IPCMDDONE)
 		complete(&f->c);
@@ -1022,7 +1053,6 @@ static void nxp_fspi_select_rx_sample_clk_source(struct nxp_fspi *f,
 		fspi_writel(f, reg, f->iobase + FSPI_MCR0);
 		f->flags &= ~FSPI_RXCLKSRC_3;
 	}
-
 }
 
 static int nxp_fspi_exec_op(struct spi_mem *mem, const struct spi_mem_op *op)
@@ -1292,6 +1322,202 @@ static const struct spi_controller_mem_caps nxp_fspi_mem_caps_quirks = {
 	.dtr = false,
 };
 
+static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
+{
+	const int cs = 0;
+	//const int rate = 66000000;
+	const int rate = 40000000;
+	const int pads = 4;
+
+	void __iomem *base = f->iobase;
+	uint64_t size_kb;
+	u32 seq0[4];
+	u32 seq1[4];
+	u32 reg, mcr0;
+	int ret;
+	int i;
+
+	memset(&seq0, 0, sizeof(seq0));
+	memset(&seq1, 0, sizeof(seq1));
+
+	/* Reset peripheral */
+	ret = fspi_readl_poll_tout(f, f->iobase + FSPI_MCR0,
+				   FSPI_MCR0_SWRST, 0, POLL_TOUT, false);
+	WARN_ON(ret);
+        if (ret)
+		return ret;
+
+	nxp_fspi_clk_disable_unprep(f);
+
+	ret = clk_set_rate(f->clk, rate);
+	if (ret)
+		return ret;
+
+	ret = nxp_fspi_clk_prep_enable(f);
+	if (ret)
+		return ret;
+
+	/* Reset the module */
+	/* w1c register, wait unit clear */
+	ret = fspi_readl_poll_tout(f, f->iobase + FSPI_MCR0,
+				   FSPI_MCR0_SWRST, 0, POLL_TOUT, false);
+	WARN_ON(ret);
+
+	/* Disable the module */
+	fspi_writel(f, FSPI_MCR0_MDIS, base + FSPI_MCR0);
+
+	/*
+	 * If clock rate > 100MHz, then switch from DLL override mode to
+	 * DLL calibration mode.
+	 */
+	if (rate > 100000000)
+		nxp_fspi_dll_calibration(f);
+
+	f->selected = cs;
+
+	/* Setup MCR0 config */
+	mcr0 = FSPI_MCR0_RXCLKSRC(0x0) |
+	       FSPI_MCR0_DOZE_EN |
+	       FSPI_MCR0_SCRFRUN_EN |
+	       FSPI_MCR0_IP_TIMEOUT(0xFF) |
+	       FSPI_MCR0_AHB_TIMEOUT(0xFF);
+
+	/* if there are individual devices connected to each fspi port, */
+	/* please enable individual mode in DT. */
+	if (!f->individual_mode)
+		mcr0 |= FSPI_MCR0_OCTCOMB_EN;
+	
+	fspi_writel(f, mcr0, base + FSPI_MCR0);
+
+	/* Setup MCR1 config */
+	reg = FSPI_MCR1_SEQ_TIMEOUT(0xFFFF) |
+	      FSPI_MCR1_AHB_TIMEOUT(0xFFFF);
+	fspi_writel(f, reg, base + FSPI_MCR1);
+
+	/* Setup MCR2 config */
+	reg = FSPI_MCR2_IDLE_WAIT(20) |
+	      FSPI_MCR2_CLRAHBBUFOPT;
+	fspi_writel(f, reg, base + FSPI_MCR2);
+
+	/* Setup AHB config */
+	reg = FSPI_AHBCR_BUFF_EN;
+	fspi_writel(f, reg, base + FSPI_AHBCR);
+
+	/* Set up ahb buffers */
+	reg = FSPI_AHBRXBUF0CR7_MSTRID(FSPI_BUFXCR_INVALID_MSTRID);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF0CR0);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF1CR0);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF2CR0);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF3CR0);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF4CR0);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF5CR0);
+	fspi_writel(f, reg, base + FSPI_AHBRX_BUF6CR0);
+
+	reg = FSPI_AHBRXBUF0CR7_BUFSZ(1);// in units of 64-bits // Max burst size is 32-bytes
+	fspi_writel(f, 0, base + FSPI_AHBRX_BUF7CR0);
+
+	/* Reset FLSHxxCR0 registers */
+	fspi_writel(f, 0, f->iobase + FSPI_FLSHA1CR0);
+	fspi_writel(f, 0, f->iobase + FSPI_FLSHA2CR0);
+	fspi_writel(f, 0, f->iobase + FSPI_FLSHB1CR0);
+	fspi_writel(f, 0, f->iobase + FSPI_FLSHB2CR0);
+
+	/* Assign controller memory mapped space as size, KBytes, of flash. */
+	size_kb = FSPI_FLSHXCR0_SZ(f->memmap_phy_size);
+
+	fspi_writel(f, size_kb, f->iobase + FSPI_FLSHA1CR0 + 4 * cs);
+
+	/* Set bus parameters */
+	reg = FSPI_FLSHXCR1_CSINTR(2) | /* 2 is minimum */
+	      FSPI_FLSHXCR1_TCSH(0) |
+	      FSPI_FLSHXCR1_TCSS(0);
+	fspi_writel(f, reg, base + FSPI_FLSHA1CR1);
+	fspi_writel(f, reg, base + FSPI_FLSHA2CR1);
+	fspi_writel(f, reg, base + FSPI_FLSHB1CR1);
+	fspi_writel(f, reg, base + FSPI_FLSHB2CR1);
+
+	reg = fspi_readl(f, base + FSPI_FLSHA1CR2) & 0xffff0000;
+	reg |= (0 << FSPI_FLSHXCR2_AWRSEQN_SHIFT) |
+	      (1 << FSPI_FLSHXCR2_AWRSEQI_SHIFT) |
+	      (0 << FSPI_FLSHXCR2_ARDSEQI_SHIFT) |
+	      (0 << FSPI_FLSHXCR2_ARDSEQN_SHIFT);
+	fspi_writel(f, reg, base + FSPI_FLSHA1CR2);
+
+	reg = 0x1;
+	fspi_writel(f, reg, base + FSPI_FLSHACR4);
+
+	/* Magic number, finish testing and see what we need here*/
+	/*fspi_writel(f, FSPI_DLLACR_DLLEN | FSPI_DLLACR_SLVDLY(0x37),
+		    f->iobase + FSPI_DLLACR);*/
+	fspi_writel(f, FSPI_DLLACR_DLLEN | FSPI_DLLACR_SLVDLY(0xf),
+		    f->iobase + FSPI_DLLACR);
+
+	/*
+	 * LUT Sequence 0 is a DDR Read.
+	 * This issues on the bus:
+	 * [7:0] "0x9" (identifies ddr read)
+	 * [15:0] address
+	 * 8 dummy clocks
+	 * [(8*n)-1:0] read data
+	 */
+	seq0[0] = LUT_DEF(0, LUT_CMD, LUT_PAD(pads), LUT_NXP_READ) |
+	          LUT_DEF(1, LUT_ADDR, LUT_PAD(pads), 16);
+	seq0[1] = LUT_DEF(2, LUT_DUMMY, LUT_PAD(pads), 8) |
+		  LUT_DEF(3, LUT_NXP_READ, LUT_PAD(pads), 0);
+	seq1[2] = LUT_DEF(4, LUT_STOP, 0, 0);
+
+	/*
+	 * LUT Sequence 1 is a DDR Write. This issues on the bus:
+	 * [7:0] "0x8" (identifies write)
+	 * [15:0] address
+	 * [(8*n)-1:0] write data
+	 */
+	seq1[0] = LUT_DEF(0, LUT_CMD, LUT_PAD(pads), LUT_NXP_WRITE) |
+	          LUT_DEF(1, LUT_ADDR, LUT_PAD(pads), 16);
+	seq1[1] = LUT_DEF(2, LUT_NXP_WRITE, LUT_PAD(pads), 0) | 
+		  LUT_DEF(3, LUT_STOP, 0, 0);
+
+	/* unlock LUT */
+	fspi_writel(f, FSPI_LUTKEY_VALUE, f->iobase + FSPI_LUTKEY);
+	fspi_writel(f, FSPI_LCKER_UNLOCK, f->iobase + FSPI_LCKCR);
+
+	/* configure read lut */
+	for (i = 0; i < ARRAY_SIZE(seq0); i++)
+		fspi_writel(f, seq0[i], base + FSPI_LUT_BASE + (i*4));
+
+	/* configure write lut */
+	for (i = 0; i < ARRAY_SIZE(seq1); i++)
+		fspi_writel(f, seq1[i], base + FSPI_LUT_BASE + 0x10 + (i*4));
+
+	/* lock LUT */
+	fspi_writel(f, FSPI_LUTKEY_VALUE, f->iobase + FSPI_LUTKEY);
+	fspi_writel(f, FSPI_LCKER_LOCK, f->iobase + FSPI_LCKCR);
+
+	/* Deassert disable */
+	fspi_writel(f, mcr0, base + FSPI_MCR0);
+
+	/* Wait for controller being ready. */
+	ret = fspi_readl_poll_tout(f, f->iobase + FSPI_STS0,
+				   FSPI_STS0_ARB_IDLE, 1, POLL_TOUT, true);
+	if (ret)
+		return ret;
+
+	/* Enable additional interrupts */
+	fspi_writel(f,
+		    FSPI_INTEN_IPCMDDONE |
+		    FSPI_INTR_SCLKSBWR |
+		    FSPI_INTR_SCLKSBRD |
+		    FSPI_INTR_DATALRNFL |
+		    FSPI_INTR_IPRXWA |
+		    FSPI_INTR_AHBCMDERR |
+		    FSPI_INTR_IPCMDERR |
+		    FSPI_INTR_AHBCMDGE |
+		    FSPI_INTR_IPCMDGE,
+		    base + FSPI_INTEN);
+
+	return 0;
+}
+
 static int nxp_fspi_probe(struct platform_device *pdev)
 {
 	struct spi_controller *ctlr;
@@ -1395,6 +1621,8 @@ static int nxp_fspi_probe(struct platform_device *pdev)
 	f->individual_mode = of_property_read_bool(np,
 						   "nxp,fspi-individual-mode");
 
+	f->ahb_bus_only = of_property_read_bool(np, "nxp,ahb-bus-only");
+
 	mutex_init(&f->lock);
 
 	ctlr->bus_num = -1;
@@ -1409,17 +1637,31 @@ static int nxp_fspi_probe(struct platform_device *pdev)
 
 	ctlr->dev.of_node = np;
 
-	ret = devm_spi_register_controller(&pdev->dev, ctlr);
-	if (ret)
-		goto err_destroy_mutex;
+	if (f->ahb_bus_only) {
+		ret = nxp_fspi_ahb_bus_setup(f);
+		if (ret)
+			goto err_destroy_mutex;
+	} else {
+		ret = devm_spi_register_controller(&pdev->dev, ctlr);
+		if (ret)
+			goto err_destroy_mutex;
 
-	pm_runtime_mark_last_busy(f->dev);
-	pm_runtime_put_autosuspend(f->dev);
+		pm_runtime_mark_last_busy(f->dev);
+		pm_runtime_put_autosuspend(f->dev);
+	}
 
 	/* indicate the controller has been initialized */
 	f->flags |= FSPI_INITILIZED;
 
-	return 0;
+	dev_info(dev, "initialized");
+
+        // from drivers/mfd/ts78xx_mfd.c:
+        // of_platform_default_populate(np, NULL, &pdev->dev);
+        // of_platform_default_populate(np, NULL, dev);
+        ret =  of_platform_default_populate(np, NULL, NULL);
+        if (!ret)
+          dev_info(dev, "sub-nodes populated.\n");
+        return ret;
 
 err_destroy_mutex:
 	mutex_destroy(&f->lock);
