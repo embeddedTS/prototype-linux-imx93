@@ -17,6 +17,12 @@
 		stdout-path = &lpuart1;
 	};
 
+	aliases {
+		gpio4 = &fpga_gpio0;
+		gpio5 = &fpga_gpio1;
+		gpio6 = &fpga_gpio2;
+	};
+
 	reserved-memory {
 		#address-cells = <2>;
 		#size-cells = <2>;
