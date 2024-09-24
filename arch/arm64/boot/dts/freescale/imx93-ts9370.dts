@@ -228,12 +228,6 @@
                 */
 	};
 
-	supervisor_rtc: rtc@68 {
-		compatible = "technologic,supervisor-rtc";
-		reg = <0x68>;
-		wakeup-source;
-	};
-
 	/* ST ISM330 (gyro/accelerometer) */
 	ism330: gyro@6a {
 		compatible = "st,ism330dlc";
@@ -261,9 +255,9 @@
 		};
 	};
 
-	supervisor_rtc: rtc@68 {
+	supervisor_rtc: rtc@60 {
 		compatible = "technologic,supervisor-rtc";
-		reg = <0x68>;
+		reg = <0x60>;
 		wakeup-source;
 	};
 };
