@@ -26,6 +26,8 @@
 #include <linux/slab.h>
 #include <linux/tty_flip.h>
 
+#include "serial_mctrl_gpio.h"
+
 /* All registers are 8-bit width */
 #define UARTBDH			0x00
 #define UARTBDL			0x01
@@ -269,6 +271,8 @@ struct lpuart_port {
 	struct clk		*baud_clk;
 	unsigned int		txfifo_size;
 	unsigned int		rxfifo_size;
+	struct mctrl_gpios	*gpios;
+	bool			hw_flow_control;
 
 	u8			rx_watermark;
 	bool			lpuart_dma_tx_use;
@@ -442,6 +446,44 @@ static unsigned int lpuart_get_baud_clk_rate(struct lpuart_port *sport)
 #define lpuart_enable_clks(x)	__lpuart_enable_clks(x, true)
 #define lpuart_disable_clks(x)	__lpuart_enable_clks(x, false)
 
+static void lpuart_rs485_rts_enable(struct uart_port *port)
+{
+	struct lpuart_port *sport = container_of(port,
+			struct lpuart_port, port);
+	struct serial_rs485 *rs485conf = &port->rs485;
+
+	if (sport->hw_flow_control ||
+	    !(rs485conf->flags & SER_RS485_ENABLED))
+		return;
+
+	if (rs485conf->flags & SER_RS485_RTS_ON_SEND) {
+		mctrl_gpio_set(sport->gpios,
+			       sport->port.mctrl | TIOCM_RTS);
+	} else {
+		mctrl_gpio_set(sport->gpios,
+			       sport->port.mctrl & ~TIOCM_RTS);
+	}
+}
+
+static void lpuart_rs485_rts_disable(struct uart_port *port)
+{
+	struct lpuart_port *sport = container_of(port,
+			struct lpuart_port, port);
+	struct serial_rs485 *rs485conf = &port->rs485;
+
+	if (sport->hw_flow_control ||
+	    !(rs485conf->flags & SER_RS485_ENABLED))
+		return;
+
+	if (rs485conf->flags & SER_RS485_RTS_ON_SEND) {
+		mctrl_gpio_set(sport->gpios,
+			       sport->port.mctrl & ~TIOCM_RTS);
+	} else {
+		mctrl_gpio_set(sport->gpios,
+			       sport->port.mctrl | TIOCM_RTS);
+	}
+}
+
 static void lpuart_stop_tx(struct uart_port *port)
 {
 	unsigned char temp;
@@ -449,6 +491,8 @@ static void lpuart_stop_tx(struct uart_port *port)
 	temp = readb(port->membase + UARTCR2);
 	temp &= ~(UARTCR2_TIE | UARTCR2_TCIE);
 	writeb(temp, port->membase + UARTCR2);
+
+	lpuart_rs485_rts_disable(port);
 }
 
 static void lpuart32_stop_tx(struct uart_port *port)
@@ -458,6 +502,8 @@ static void lpuart32_stop_tx(struct uart_port *port)
 	temp = lpuart32_read(port, UARTCTRL);
 	temp &= ~(UARTCTRL_TIE | UARTCTRL_TCIE);
 	lpuart32_write(port, temp, UARTCTRL);
+
+	lpuart_rs485_rts_disable(port);
 }
 
 static void lpuart_stop_rx(struct uart_port *port)
@@ -840,6 +886,13 @@ static void lpuart32_start_tx(struct uart_port *port)
 	struct lpuart_port *sport = container_of(port, struct lpuart_port, port);
 	unsigned long temp;
 
+	if (!sport->hw_flow_control &&
+	    port->rs485.flags & SER_RS485_ENABLED &&
+	    (port->x_char ||
+	     !(uart_tx_stopped(port)))) {
+		lpuart_rs485_rts_enable(port);
+	}
+
 	if (sport->lpuart_dma_tx_use) {
 		if (!lpuart_stopped_or_empty(port))
 			lpuart_dma_tx(sport);
@@ -877,8 +930,10 @@ static unsigned int lpuart_tx_empty(struct uart_port *port)
 	if (sport->dma_tx_in_progress)
 		return 0;
 
-	if (sr1 & UARTSR1_TC && sfifo & UARTSFIFO_TXEMPT)
+	if (sr1 & UARTSR1_TC && sfifo & UARTSFIFO_TXEMPT) {
+		lpuart_rs485_rts_disable(port);
 		return TIOCSER_TEMT;
+	}
 
 	return 0;
 }
@@ -1508,6 +1563,13 @@ static int lpuart_config_rs485(struct uart_port *port, struct ktermios *termios,
 	}
 
 	writeb(modem, sport->port.membase + UARTMODEM);
+
+	/* Adjust RTS polarity in case it's driven in software */
+	if (port->ops->tx_empty(port))
+		lpuart_rs485_rts_disable(port);
+	else
+		lpuart_rs485_rts_enable(port);
+
 	return 0;
 }
 
@@ -1543,6 +1605,7 @@ static int lpuart32_config_rs485(struct uart_port *port, struct ktermios *termio
 
 static unsigned int lpuart_get_mctrl(struct uart_port *port)
 {
+	struct lpuart_port *sport = container_of(port, struct lpuart_port, port);
 	unsigned int mctrl = 0;
 	u8 reg;
 
@@ -1550,11 +1613,14 @@ static unsigned int lpuart_get_mctrl(struct uart_port *port)
 	if (reg & UARTCR1_LOOPS)
 		mctrl |= TIOCM_LOOP;
 
+	mctrl_gpio_get(sport->gpios, &mctrl);
+
 	return mctrl;
 }
 
 static unsigned int lpuart32_get_mctrl(struct uart_port *port)
 {
+	struct lpuart_port *sport = container_of(port, struct lpuart_port, port);
 	unsigned int mctrl = TIOCM_CAR | TIOCM_DSR | TIOCM_CTS;
 	u32 reg;
 
@@ -1562,11 +1628,14 @@ static unsigned int lpuart32_get_mctrl(struct uart_port *port)
 	if (reg & UARTCTRL_LOOPS)
 		mctrl |= TIOCM_LOOP;
 
+	mctrl_gpio_get(sport->gpios, &mctrl);
+
 	return mctrl;
 }
 
 static void lpuart_set_mctrl(struct uart_port *port, unsigned int mctrl)
 {
+	struct lpuart_port *sport = container_of(port, struct lpuart_port, port);
 	u8 reg;
 
 	reg = readb(port->membase + UARTCR1);
@@ -1577,10 +1646,12 @@ static void lpuart_set_mctrl(struct uart_port *port, unsigned int mctrl)
 		reg |= UARTCR1_LOOPS;
 
 	writeb(reg, port->membase + UARTCR1);
+	mctrl_gpio_set(sport->gpios, mctrl);
 }
 
 static void lpuart32_set_mctrl(struct uart_port *port, unsigned int mctrl)
 {
+	struct lpuart_port *sport = container_of(port, struct lpuart_port, port);
 	u32 reg;
 
 	reg = lpuart32_read(port, UARTCTRL);
@@ -1591,6 +1662,7 @@ static void lpuart32_set_mctrl(struct uart_port *port, unsigned int mctrl)
 		reg |= UARTCTRL_LOOPS;
 
 	lpuart32_write(port, reg, UARTCTRL);
+	mctrl_gpio_set(sport->gpios, mctrl);
 }
 
 static void lpuart_break_ctl(struct uart_port *port, int break_state)
@@ -1965,6 +2037,8 @@ static void lpuart_dma_shutdown(struct lpuart_port *sport)
 		dma_release_channel(sport->dma_tx_chan);
 	if (sport->dma_rx_chan)
 		dma_release_channel(sport->dma_rx_chan);
+
+	mctrl_gpio_disable_ms(sport->gpios);
 }
 
 static void lpuart_shutdown(struct uart_port *port)
@@ -2924,6 +2998,9 @@ static int lpuart_probe(struct platform_device *pdev)
 	sport->rx_watermark = sdata->rx_watermark;
 	sport->dma_idle_int = is_imx7ulp_lpuart(sport) || is_imx8ulp_lpuart(sport) ||
 			      is_imx8qxp_lpuart(sport);
+	sport->gpios = mctrl_gpio_init(&sport->port, 0);
+	if (IS_ERR(sport->gpios))
+		return PTR_ERR(sport->gpios);
 
 	ret = platform_get_irq(pdev, 0);
 	if (ret < 0)
@@ -2973,6 +3050,9 @@ static int lpuart_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "serial%d out of range\n", ret);
 		return -EINVAL;
 	}
+
+	sport->hw_flow_control = of_property_read_bool(np, "uart-has-rtscts");
+
         dev_info(&pdev->dev, "Assigned serial%d (out of up to %lu)\n", ret, ARRAY_SIZE(lpuart_ports));
 	sport->port.line = ret;
 
