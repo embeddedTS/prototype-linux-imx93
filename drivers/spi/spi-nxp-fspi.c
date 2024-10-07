@@ -404,6 +404,7 @@ struct nxp_fspi {
 	u32 memmap_len;
 	bool individual_mode;
 	bool ahb_bus_only;
+	int ahb_clock_rate;
 	struct clk *clk, *clk_en;
 	struct device *dev;
 	struct completion c;
@@ -1325,8 +1326,6 @@ static const struct spi_controller_mem_caps nxp_fspi_mem_caps_quirks = {
 static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
 {
 	const int cs = 0;
-	//const int rate = 66000000;
-	const int rate = 40000000;
 	const int pads = 4;
 
 	void __iomem *base = f->iobase;
@@ -1349,7 +1348,7 @@ static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
 
 	nxp_fspi_clk_disable_unprep(f);
 
-	ret = clk_set_rate(f->clk, rate);
+	ret = clk_set_rate(f->clk, f->ahb_clock_rate);
 	if (ret)
 		return ret;
 
@@ -1370,7 +1369,7 @@ static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
 	 * If clock rate > 100MHz, then switch from DLL override mode to
 	 * DLL calibration mode.
 	 */
-	if (rate > 100000000)
+	if (f->ahb_clock_rate > 100000000)
 		nxp_fspi_dll_calibration(f);
 
 	f->selected = cs;
@@ -1638,6 +1637,11 @@ static int nxp_fspi_probe(struct platform_device *pdev)
 	ctlr->dev.of_node = np;
 
 	if (f->ahb_bus_only) {
+		ret = of_property_read_u32(np, "nxp,ahb-clk-rate", &f->ahb_clock_rate);
+		if (ret < 0) {
+			goto err_destroy_mutex;
+		}
+
 		ret = nxp_fspi_ahb_bus_setup(f);
 		if (ret)
 			goto err_destroy_mutex;
