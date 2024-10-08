@@ -391,8 +391,7 @@
 &lpuart7 { /* serial@42690000: Primary RS-485 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart7>;
-	rts-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
-	//linux,rs485-enabled-at-boot-time;
+	linux,rs485-enabled-at-boot-time;
 	status = "okay";
 };
 
@@ -652,7 +651,7 @@
 		fsl,pins = <
 			MX93_PAD_GPIO_IO08__LPUART7_TX			0x31e
 			MX93_PAD_GPIO_IO09__LPUART7_RX			0x31e
-			MX93_PAD_GPIO_IO10__GPIO2_IO10			0x31e /* TXEN */
+			MX93_PAD_GPIO_IO11__LPUART7_RTS_B		0x51e /* TXEN */
 		>;
 	};
 
