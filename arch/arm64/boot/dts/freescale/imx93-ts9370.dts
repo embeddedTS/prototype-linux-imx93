@@ -370,11 +370,7 @@
 	status = "okay";
 };
 
-&lpuart3 { /* serial@42570000: TBD via MAX10 */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart3>;
-	status = "okay";
-};
+/* lpuart3 / serial@42570000: TBD via MAX10 */
 
 &lpuart5 { /* serial@42590000: MikroE */
 	pinctrl-names = "default";
@@ -398,7 +394,6 @@
 &lpuart8 { /* serial@426a0000: Secondary RS-485 (or RS-232) */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart8>;
-	rts-gpios = <&gpio2 11 GPIO_ACTIVE_HIGH>;
 	//linux,rs485-enabled-at-boot-time;
 	status = "okay";
 };
@@ -620,14 +615,6 @@
 		>;
 	};
 
-        /* uart3/LP2: TBD */
-	pinctrl_uart3: uart3grp {
-		fsl,pins = <
-			MX93_PAD_GPIO_IO14__LPUART3_TX			0x31e
-			MX93_PAD_GPIO_IO15__LPUART3_RX			0x31e
-		>;
-	};
-
         /* uart5/LP4: Mikroe */
 	pinctrl_uart5: uart5grp {
 		fsl,pins = <
@@ -658,9 +645,9 @@
         /* uart8/LP7: Secondary RS-485/232 */
 	pinctrl_uart8: uart8grp {
 		fsl,pins = <
-			MX93_PAD_GPIO_IO11__GPIO2_IO11			0x31e /* TXEN */
 			MX93_PAD_GPIO_IO12__LPUART8_TX			0x31e
 			MX93_PAD_GPIO_IO13__LPUART8_RX			0x31e
+			MX93_PAD_GPIO_IO15__LPUART8_RTS_B		0x51e /* TXEN */
 		>;
 	};
 
