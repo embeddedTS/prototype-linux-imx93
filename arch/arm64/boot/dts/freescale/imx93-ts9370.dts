@@ -381,6 +381,7 @@
 &lpuart6 { /* serial@425a0000: Silex Bluetooth */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart6>;
+	uart-has-rtscts;
 	status = "okay";
 };
 
