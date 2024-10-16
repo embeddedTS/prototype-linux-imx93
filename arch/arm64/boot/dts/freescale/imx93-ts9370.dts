@@ -253,12 +253,12 @@
 
 	/* Toshiba 357767 (Display Port) */
 
-	/* ST IIS2MDL (magnetometer) */
+	/* ST IIS2MDCTR (magnetometer) */
 	magnet: magnetometer@1e {
 		compatible = "st,lis2mdl";
 		reg = <0x1e>;
-                /*
 		st,drdy-int-pin = <1>;
+                /*
 		interrupt-parent = <&gpio1>;
 		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
                 */
