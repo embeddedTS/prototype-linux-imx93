@@ -264,9 +264,9 @@
                 */
 	};
 
-	/* ST ISM330 (gyro/accelerometer) */
+	/* ST ISM330DLCTR (gyro/accelerometer) (ism6dhcx) */
 	ism330: gyro@6a {
-		compatible = "st,ism330dlc";
+		compatible = "st,ism330dhcx";
 		reg = <0x6a>;
                 /*
 		interrupt-parent = <&gpio5>;
