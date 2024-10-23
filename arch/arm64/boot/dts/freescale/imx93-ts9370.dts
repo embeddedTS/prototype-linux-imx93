@@ -96,6 +96,12 @@
 		regulator-min-microvolt = <1800000>;
 		regulator-max-microvolt = <1800000>;
 	};
+
+	sdio_pwrseq: sdio-pwrseq {
+		compatible = "mmc-pwrseq-simple";
+		pinctrl-names = "default";
+		reset-gpios = <&fpga_gpio1 31 GPIO_ACTIVE_LOW>;
+	};
 };
 
 &aips2 {
@@ -475,12 +481,16 @@
 	broken-cd;
 };
 
+/* WiFi */
 &usdhc3 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3>;
 	pinctrl-2 = <&pinctrl_usdhc3>;
+	mmc-pwrseq = <&sdio_pwrseq>;
 	bus-width = <4>;
+	non-removable;
+	fsl,sdio-async-interrupt-enabled;
 	status = "okay";
 };
 
