@@ -233,11 +233,27 @@
 	status = "okay";
 
 	/* i.MX93 Master */
-	/* CODEC */
-	/* FPGA */
+
 	/* Toshiba 357767 (Display Port) @ 0x0c */
 
-	/* MAX9680 Audio CODEC @ 0x10 */
+	/* MAX9860 Audio CODEC @ 0x10 */
+	max9860: max9860@10 {
+		compatible = "maxim,max9860";
+		reg = <0x10>;
+
+		AVDD-supply = <&reg_vref_1v8>;
+		DVDD-supply = <&reg_vref_1v8>;
+		DVDDIO-supply = <&reg_vref_3v3>;
+
+		clock-names = "mclk";
+		clocks = <&clk IMX93_CLK_CCM_CKO2>;
+
+		assigned-clock = <&clk IMX93_CLK_CCM_CKO2>;
+		assigned-clock-parents = <&clk IMX93_CLK_24M>;
+		assigned-clock-rates = <24000000>;
+
+	        #sound-dai-cells = <0>;
+	};
 
 	/* ST IIS2MDL (magnetometer) */
 	magnet: magnetometer@1e {
