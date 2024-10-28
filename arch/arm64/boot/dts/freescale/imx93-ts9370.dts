@@ -111,6 +111,23 @@
 		pinctrl-names = "default";
 		reset-gpios = <&fpga_gpio1 31 GPIO_ACTIVE_LOW>;
 	};
+
+        sound-max9860 {
+		compatible = "fsl,imx-audio-card";
+		model = "imx-max9860";
+		status = "okay";
+		pri-dai-link {
+			link-name = "max9860";
+			format = "i2s";
+			fsl,mclk-equal-bclk;
+			cpu {
+				sound-dai = <&sai1>;
+			};
+			codec {
+				sound-dai = <&max9860>;
+			};
+		};
+        };
 };
 
 &aips2 {
@@ -460,6 +477,27 @@
 	status = "okay";
 };
 
+&sai1 {
+        #sound-dai-cells = <0>;
+        pinctrl-names = "default";
+        pinctrl-0 = <&pinctrl_sai1>;
+
+	clocks = <&clk IMX93_CLK_SAI1_IPG>, <&clk IMX93_CLK_DUMMY>,
+	         <&clk IMX93_CLK_SAI1_GATE>,
+	         <&clk IMX93_CLK_DUMMY>, <&clk IMX93_CLK_DUMMY>,
+	         <&clk IMX93_CLK_AUDIO_PLL>;
+	clock-names = "bus", "mclk0",
+	              "mclk1",
+	              "mclk2", "mclk3",
+	              "pll8k";
+	assigned-clocks = <&clk IMX93_CLK_SAI1>;
+	assigned-clock-parents = <&clk IMX93_CLK_AUDIO_PLL>;
+	assigned-clock-rates = <12288000>;
+
+	fsl,sai-asynchronous;
+	status = "okay";
+};
+
 &usbotg1 {
 	dr_mode = "host";
 	status = "okay";
@@ -571,10 +609,6 @@
 
 	ts9370_pinctrl_hog: hoggrp {
 		fsl,pins = <
-			MX93_PAD_SAI1_TXFS__GPIO1_IO11			0x282 /* SAI1_TXFS */
-			MX93_PAD_SAI1_TXC__GPIO1_IO12			0x282 /* I2S_1 */
-			MX93_PAD_SAI1_TXD0__GPIO1_IO13			0x282 /* SAI1_TXD0 */
-			MX93_PAD_SAI1_RXD0__GPIO1_IO14			0x282 /* I2S_2 */
 			MX93_PAD_PDM_BIT_STREAM1__GPIO1_IO10		0x282 /* SPARE_1 */
 			MX93_PAD_GPIO_IO03__GPIO2_IO03			0x282 /* GPIO_03 */
 			MX93_PAD_GPIO_IO16__GPIO2_IO16			0x282 /* GPIO_16 */
@@ -676,6 +710,15 @@
 			MX93_PAD_ENET2_TD3__ENET1_RGMII_TD3		0x57e
 			MX93_PAD_ENET2_TXC__ENET1_RGMII_TXC		0x5fe
 			MX93_PAD_ENET2_TX_CTL__ENET1_RGMII_TX_CTL	0x57e
+		>;
+	};
+
+	pinctrl_sai1: sai1grp {
+		fsl,pins = <
+			MX93_PAD_SAI1_TXFS__SAI1_TX_SYNC		0x31e
+			MX93_PAD_SAI1_TXC__SAI1_TX_BCLK			0x31e
+			MX93_PAD_SAI1_TXD0__SAI1_TX_DATA00		0x31e
+			MX93_PAD_SAI1_RXD0__SAI1_RX_DATA00		0x31e
 		>;
 	};
 
