@@ -253,6 +253,12 @@
 
 	/* Toshiba 357767 (Display Port) @ 0x0c */
 
+        clk_codec: clk-codec {
+                compatible = "fixed-clock";
+                #clock-cells = <0>;
+                clock-frequency = <12000000>;
+        };
+
 	/* MAX9860 Audio CODEC @ 0x10 */
 	max9860: max9860@10 {
 		compatible = "maxim,max9860";
@@ -263,11 +269,8 @@
 		DVDDIO-supply = <&reg_vref_3v3>;
 
 		clock-names = "mclk";
-		clocks = <&clk IMX93_CLK_CCM_CKO2>;
 
-		assigned-clock = <&clk IMX93_CLK_CCM_CKO2>;
-		assigned-clock-parents = <&clk IMX93_CLK_24M>;
-		assigned-clock-rates = <24000000>;
+		clocks = <&clk_codec>;
 
 	        #sound-dai-cells = <0>;
 	};
