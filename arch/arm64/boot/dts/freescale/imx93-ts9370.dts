@@ -571,7 +571,7 @@
 
 &fpga_gpio1 {
 	gpio-line-names =
-		"EN_2ND_PORT_232",   "EN_CAN_1",    "EN_CAN_2",      "",
+		"EN_2ND_PORT_232",   "EN_CAN_1",    "EN_CAN_2",      "NIM_STATUS",
 		"",                  "",            "",              "",
 		"",                  "",            "",              "",
 		"",                  "",            "",              "",
