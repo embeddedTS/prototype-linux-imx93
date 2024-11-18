@@ -251,8 +251,6 @@
 
 	/* i.MX93 Master */
 
-	/* Toshiba 357767 (Display Port) @ 0x0c */
-
 	/* MAX9860 Audio CODEC @ 0x10 */
 	max9860: max9860@10 {
 		compatible = "maxim,max9860";
@@ -272,10 +270,11 @@
 	        #sound-dai-cells = <0>;
 	};
 
-	/* ST IIS2MDL (magnetometer) */
+	/* ST IIS2MDCTR (magnetometer) */
 	magnet: magnetometer@1e {
 		compatible = "st,lis2mdl";
 		reg = <0x1e>;
+		st,drdy-int-pin = <1>;
                 /*
 		st,drdy-int-pin = <1>;
 		interrupt-parent = <&gpio1>;
@@ -299,18 +298,13 @@
 		};
 	};
 
-	/* Toshiba 357767 (Display Port) */
-
-	/* ST IIS2MDCTR (magnetometer) */
-	magnet: magnetometer@1e {
-		compatible = "st,lis2mdl";
-		reg = <0x1e>;
-		st,drdy-int-pin = <1>;
-                /*
-		interrupt-parent = <&gpio1>;
-		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
-                */
+	supervisor_rtc: rtc@60 {
+		compatible = "technologic,supervisor-rtc";
+		reg = <0x60>;
+		wakeup-source;
 	};
+
+	/* Toshiba 357767 (Display Port) */
 
 	/* ST ISM330DLCTR (gyro/accelerometer) (ism6dhcx) */
 	ism330: gyro@6a {
@@ -320,29 +314,6 @@
 		interrupt-parent = <&gpio5>;
 		interrupts = <0 IRQ_TYPE_LEVEL_HIGH>;
                 */
-	};
-	/* Mikro bus */
-	/* PMIC level shifter (sheet 5); control on i2c2 */
-
-	supervisor: supervisor@54 {
-		compatible = "technologic,supervisor";
-		reg = <0x54>;
-
-		supervisor_adc: supervisor_adc {
-			compatible = "technologic,supervisor-adc";
-			#io-channel-cells = <1>;
-		};
-
-		supervisor_temp: supervisor_temp {
-			compatible = "technologic,supervisor-temp";
-			#io-channel-cells = <0>;
-		};
-	};
-
-	supervisor_rtc: rtc@60 {
-		compatible = "technologic,supervisor-rtc";
-		reg = <0x60>;
-		wakeup-source;
 	};
 };
 
