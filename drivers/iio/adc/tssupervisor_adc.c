@@ -1,8 +1,12 @@
 #define DEBUG
 // SPDX-License-Identifier: GPL-2.0
 /*
- * ADC driver for simple 8-bit ADC on TS-7250-V3
- * Copyright (C) 2021-2022 Technologic Systems, Inc. dba embeddedTS
+ * I2C ADC driver for the Wizard supervisory microcontroller.
+ * Copyright (C) 2021-2022, 2024 Technologic Systems, Inc. dba embeddedTS
+ *
+ * This driver reads and reports the RA4M2's raw ADC readings in
+ * millivolts. It supports as many ADCs as the Wizard reports are
+ * available on the product that it is running - limited here to 32.
  */
 
 #include <linux/kernel.h>
@@ -92,8 +96,14 @@ static int ts_adc_iio_read_raw(struct iio_dev *iio_dev,
 		*val = data;
 		return IIO_VAL_INT;
 	case IIO_CHAN_INFO_SCALE:
-		*val = 3300;
-		*val2 = 12;
+		/*
+		 * Note: This returns the scale for calculating the
+		 * voltage seen at the input to the ADC. Where there
+		 * is an external divider, a voltage-divider entry
+		 * added to the device tree will give the true value.
+		 */
+		*val = 3300;   // Vref
+		*val2 = 12;    // 12-bit ADC
 		return IIO_VAL_FRACTIONAL_LOG2;
 	default:
 		break;
