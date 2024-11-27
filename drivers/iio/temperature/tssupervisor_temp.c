@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * ADC driver for simple 8-bit ADC on TS-7250-V3
- * Copyright (C) 2021-2022 Technologic Systems, Inc. dba embeddedTS
+ * I2C temperature driver for the Wizard supervisory microcontroller.
+ * Copyright (C) 2021-2022, 2024 Technologic Systems, Inc. dba embeddedTS
+ *
+ * Temperature is read from the RA4M2's on-chip temperature ADC, whose
+ * raw readings are then converted (here) into degrees milli-celcius.
  */
 
 #include <linux/kernel.h>
@@ -39,6 +42,7 @@ static int ts_temp_iio_read_raw(struct iio_dev *iio_dev,
 
 	switch (mask) {
 	case IIO_CHAN_INFO_PROCESSED:
+		// From the datasheet example
 		*val = (int32_t)data*196551/1000-277439;
 		return IIO_VAL_INT;
 	default:
