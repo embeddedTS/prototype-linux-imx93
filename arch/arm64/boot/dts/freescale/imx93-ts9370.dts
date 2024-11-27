@@ -106,6 +106,70 @@
 		regulator-always-on;
 	};
 
+	/*
+	 * The numbering of the following voltage-divider io-channels must match
+	 * the ordering of the Wizard microcontroller's scan table that it selected
+	 * for the hardware configuration it determined itself to be running on.
+	 */
+	an_vin: an-vin {
+		compatible = "voltage-divider";
+		io-channels = <&supervisor_adc 0>;
+		label = "VIN";
+		output-ohms = <4990>; /* R2: 4.9k */
+		full-ohms = <79990>;  /* R1 (75k) + R2 (4.99k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_5p2va: an-5p2va {
+		compatible = "voltage-divider";
+		io-channels = <&supervisor_adc 1>;
+		label = "5.2V_A";
+		output-ohms = <75000>; /* R2: 75k */
+		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_reg_5v: an-reg-5v {
+		compatible = "voltage-divider";
+		io-channels = <&supervisor_adc 2>;
+		label = "REG_5V";
+		output-ohms = <75000>; /* R2: 75k */
+		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_vchrg: an-vchrg {
+		compatible = "voltage-divider";
+		io-channels = <&supervisor_adc 3>;
+		label = "VCHRG";
+		output-ohms = <75000>; /* R2: 75k */
+		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_scap_plus: an-scap-plus {
+		compatible = "voltage-divider";
+		io-channels = <&supervisor_adc 4>;
+		label = "SCAP_PLUS";
+		output-ohms = <75000>; /* R2: 75k */
+		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
+		#io-channel-cells = <0>;
+	};
+
+        /*
+         *
+         * On boards with two or more banks, junction becomes junction-0, and
+         * additional junctions are labeled junction-N.
+         */
+	an_scap_junction: an-scap-junction {
+		compatible = "voltage-divider";
+		io-channels = <&supervisor_adc 5>;
+		label = "SCAP_JUNCTION";
+		output-ohms = <1>;  /* direct mV (<3.3V) after 12-bit scaling */
+		full-ohms = <1>;
+		#io-channel-cells = <0>;
+	};
+
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
 		pinctrl-names = "default";
