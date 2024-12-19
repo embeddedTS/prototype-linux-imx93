@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: GPL-2.0 OR X11
+/*
+ * Copyright 2024-2025 Technologic Systems, Inc. dba embeddedTS
+ */
+
+/dts-v1/;
+#include "imx93-ts4300.dtsi"
+#include "imx93-ts4300-ts8551.dtsi"
+
+/ {
+	model = "embeddedTS TS-4300 (TS-8551)";
+	compatible = "technologic,ts9370", "fsl,imx93";
+};
