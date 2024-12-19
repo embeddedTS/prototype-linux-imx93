@@ -156,11 +156,10 @@
 		#io-channel-cells = <0>;
 	};
 
-        /*
-         *
-         * On boards with two or more banks, junction becomes junction-0, and
-         * additional junctions are labeled junction-N.
-         */
+	/*
+	 * On boards with two or more banks, junction becomes junction-0, and
+	 * additional junctions are labeled junction-N.
+	 */
 	an_scap_junction: an-scap-junction {
 		compatible = "voltage-divider";
 		io-channels = <&supervisor_adc 5>;
@@ -176,7 +175,7 @@
 		reset-gpios = <&fpga_gpio1 31 GPIO_ACTIVE_LOW>;
 	};
 
-        sound-max9860 {
+	sound-max9860 {
 		compatible = "fsl,imx-audio-card";
 		model = "imx-max9860";
 		status = "okay";
@@ -191,7 +190,7 @@
 				sound-dai = <&max9860>;
 			};
 		};
-        };
+	};
 };
 
 &aips2 {
@@ -331,7 +330,7 @@
 		assigned-clock-parents = <&clk IMX93_CLK_24M>;
 		assigned-clock-rates = <24000000>;
 
-	        #sound-dai-cells = <0>;
+		#sound-dai-cells = <0>;
 	};
 
 	/* ST IIS2MDCTR (magnetometer) */
@@ -339,11 +338,11 @@
 		compatible = "st,lis2mdl";
 		reg = <0x1e>;
 		st,drdy-int-pin = <1>;
-                /*
+		/*
 		st,drdy-int-pin = <1>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
-                */
+		*/
 	};
 
 	/* Wizard multi-function device (MFD) */
@@ -374,10 +373,10 @@
 	ism330: gyro@6a {
 		compatible = "st,ism330dhcx";
 		reg = <0x6a>;
-                /*
+		/*
 		interrupt-parent = <&gpio5>;
 		interrupts = <0 IRQ_TYPE_LEVEL_HIGH>;
-                */
+		*/
 	};
 };
 
@@ -513,18 +512,18 @@
 };
 
 &sai1 {
-        #sound-dai-cells = <0>;
-        pinctrl-names = "default";
-        pinctrl-0 = <&pinctrl_sai1>;
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sai1>;
 
 	clocks = <&clk IMX93_CLK_SAI1_IPG>, <&clk IMX93_CLK_DUMMY>,
-	         <&clk IMX93_CLK_SAI1_GATE>,
-	         <&clk IMX93_CLK_DUMMY>, <&clk IMX93_CLK_DUMMY>,
-	         <&clk IMX93_CLK_AUDIO_PLL>;
+		 <&clk IMX93_CLK_SAI1_GATE>,
+		 <&clk IMX93_CLK_DUMMY>, <&clk IMX93_CLK_DUMMY>,
+		 <&clk IMX93_CLK_AUDIO_PLL>;
 	clock-names = "bus", "mclk0",
-	              "mclk1",
-	              "mclk2", "mclk3",
-	              "pll8k";
+		      "mclk1",
+		      "mclk2", "mclk3",
+		      "pll8k";
 	assigned-clocks = <&clk IMX93_CLK_SAI1>;
 	assigned-clock-parents = <&clk IMX93_CLK_AUDIO_PLL>;
 	assigned-clock-rates = <12288000>;
@@ -593,7 +592,7 @@
 };
 
 &fpga_gpio0 {
-        gpio-line-names =
+	gpio-line-names =
 		"EN_GREEN_LED_N",    "EN_YEL_LED_N",      "EN_RED_LED_N",      "",
 		"NIM_RESET_N",       "NIM_CTS_N",         "NIM_PWR_ON_N",      "EN_NIM_USB_N",
 		"EN_NIM_4V",         "EN_NIM_3P3V",       "NIM_TXD",           "NIM_RXD",
@@ -631,11 +630,11 @@
 /* CPU GPIO2: 43810000.gpio (per i.MX93 RM (ch. 29/GPIO) */
 &gpio2 {
 	gpio-line-names =
-	"GPIO_00",      "GPIO_01",      "GPIO_02", "GPIO_03", "GPIO_04",
-        "GPIO_05",      "GPIO_06",      "GPIO_07", "GPIO_08", "GPIO_09",
-        "RS485_1_TXEN", "RS485_2_TXEN", "GPIO_12", "GPIO_13", "GPIO_14",
-        "GPIO_15",      "GPIO_16",      "GPIO_17", "GPIO_18", "GPIO_19",
-        "GPIO_20",      "GPIO_21";
+		"GPIO_00",      "GPIO_01",      "GPIO_02", "GPIO_03", "GPIO_04",
+		"GPIO_05",      "GPIO_06",      "GPIO_07", "GPIO_08", "GPIO_09",
+		"RS485_1_TXEN", "RS485_2_TXEN", "GPIO_12", "GPIO_13", "GPIO_14",
+		"GPIO_15",      "GPIO_16",      "GPIO_17", "GPIO_18", "GPIO_19",
+		"GPIO_20",      "GPIO_21";
 };
 
 &iomuxc {
@@ -757,7 +756,7 @@
 		>;
 	};
 
-        /* uart1/LP0: Console via serial-USB */
+	/* uart1/LP0: Console via serial-USB */
 	pinctrl_uart1: uart1grp {
 		fsl,pins = <
 			MX93_PAD_UART1_RXD__LPUART1_RX			0x31e
@@ -765,7 +764,7 @@
 		>;
 	};
 
-        /* uart2/LP1: RS-232 */
+	/* uart2/LP1: RS-232 */
 	pinctrl_uart2: uart2grp {
 		fsl,pins = <
 			MX93_PAD_UART2_RXD__LPUART2_RX			0x31e
@@ -773,7 +772,7 @@
 		>;
 	};
 
-        /* uart5/LP4: Mikroe */
+	/* uart5/LP4: Mikroe */
 	pinctrl_uart5: uart5grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO00__LPUART5_TX			0x31e
@@ -781,7 +780,7 @@
 		>;
 	};
 
-        /* uart6/LP5: Silex Bluetooth */
+	/* uart6/LP5: Silex Bluetooth */
 	pinctrl_uart6: uart6grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO04__LPUART6_TX			0x31e
@@ -791,7 +790,7 @@
 		>;
 	};
 
-        /* uart7/LP6: Primary RS-485 */
+	/* uart7/LP6: Primary RS-485 */
 	pinctrl_uart7: uart7grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO08__LPUART7_TX			0x31e
@@ -800,7 +799,7 @@
 		>;
 	};
 
-        /* uart8/LP7: Secondary RS-485/232 */
+	/* uart8/LP7: Secondary RS-485/232 */
 	pinctrl_uart8: uart8grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO12__LPUART8_TX			0x31e
