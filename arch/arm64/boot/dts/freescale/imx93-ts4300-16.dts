@@ -9,5 +9,5 @@
 
 / {
 	model = "embeddedTS TS-4300 (TS-8551)";
-	compatible = "technologic,ts9370", "fsl,imx93";
+	compatible = "technologic,ts4300-ts8551", "technologic,ts4300", "fsl,imx93";
 };
