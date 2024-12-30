@@ -106,6 +106,14 @@ config TMP117
 	  This driver can also be built as a module. If so, the module will
 	  be called tmp117.
 
+config TS_SUPERVISOR_TEMP
+	tristate "embeddedTS Supervisory Microcontroller TEMP"
+	depends on OF
+	depends on MFD_TS_SUPERVISOR
+	help
+	  Say yes here to build support for embeddedTS supervisory
+	  microcontroller temperature sensor.
+
 config TSYS01
 	tristate "Measurement Specialties TSYS01 temperature sensor using I2C bus connection"
 	depends on I2C
