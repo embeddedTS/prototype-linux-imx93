@@ -1,0 +1,55 @@
+// SPDX-License-Identifier: GPL-2.0 OR X11
+/*
+* Copyright 2017-2022 Technologic Systems, Inc. dba embeddedTS
+*/
+
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/pwm/pwm.h>
+//#include <dt-bindings/input/input.h>
+
+/ {
+	chosen {
+		bootargs = "console=ttyLP0,115200";
+		stdout-path = &lpuart1;
+	};
+
+	aliases {
+		gpio4 = &fpga_gpio0;
+		gpio5 = &fpga_gpio1;
+		gpio6 = &fpga_gpio2;
+		gpio7 = &fpga_gpio3;
+	};
+};
+
+&lpspi4 {
+	num-cs = <1>;
+	status = "okay";
+
+        spifram: eeprom@0 {
+                compatible = "atmel,at25", "cypress,fm25l16b";
+                reg = <0>;
+                spi-max-frequency = <2000000>;
+                size = <0x800>;
+                address-width = <16>;
+                pagesize = <64>;
+        };
+};
+
+&flexcan1 {
+	status = "okay";
+};
+
+&lpi2c1 {
+	/* Recommend using the TS-4300's built in RTC with this SOM */
+	m41t00s: rtc@68 {
+		compatible = "st,m41t00";
+		reg = <0x68>;
+		status = "disabled";
+	};
+};
+
+&lpuart2 {
+	uart-has-rtscts;
+	rts-gpios = <&fpga_gpio3 14 GPIO_ACTIVE_LOW>;
+	linux,rs485-enabled-at-boot-time;
+};
