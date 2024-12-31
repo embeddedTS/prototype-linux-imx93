@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: GPL-2.0 OR X11
+/*
+ * Copyright 2024-2025 Technologic Systems, Inc. dba embeddedTS
+ */
+
+/dts-v1/;
+/plugin/;
+#include <dt-bindings/gpio/gpio.h>
+
+&{/} {
+	mini-dp-con {
+		compatible = "dp-connector";
+		label = "CN20";
+		type = "full-size";
+
+		port {
+			dp_con_in: endpoint {
+				remote-endpoint = <&sn65dsi86_out>;
+			};
+		};
+	};
+
+	reg_1p2v: regulator-1p2v {
+		compatible = "regulator-fixed";
+		regulator-name = "fixed-1.2V";
+		regulator-min-microvolt = <1200000>;
+		regulator-max-microvolt = <1200000>;
+		regulator-boot-on;
+		regulator-always-on;
+	};
+
+	sn65dsi86_refclk: clk-dp {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <19200000>;
+	};
+
+	video_mux: mux-controller {
+		compatible = "gpio-mux";
+		#mux-state-cells = <0>;
+		mux-gpios = <&fpga_gpio0 7 GPIO_ACTIVE_HIGH>;
+		idle-state = <0>;
+	};
+};
+
+&dsi {
+	status = "okay";
+
+	ports {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		port@1 {
+			reg = <1>;
+
+			dsi_to_bridge: endpoint {
+				remote-endpoint = <&sn65dsi86_in>;
+			};
+		};
+	};
+};
+
+&lpi2c1 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	bridge@2c {
+		compatible = "ti,sn65dsi86";
+		reg = <0x2c>;
+
+		clocks = <&sn65dsi86_refclk>;
+		clock-names = "refclk";
+
+		vccio-supply = <&reg_1p8v>;
+		vpll-supply = <&reg_1p8v>;
+		vcca-supply = <&reg_1p2v>;
+		vcc-supply = <&reg_1p2v>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+				sn65dsi86_in: endpoint {
+					remote-endpoint = <&dsi_to_bridge>;
+				};
+			};
+
+			port@1 {
+				reg = <1>;
+				sn65dsi86_out: endpoint {
+					remote-endpoint = <&dp_con_in>;
+				};
+			};
+		};
+	};
+};
