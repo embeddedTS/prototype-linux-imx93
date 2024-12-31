@@ -8,6 +8,12 @@
 #include <dt-bindings/gpio/gpio.h>
 
 &{/} {
+	clk_dp: clk-dp {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <19200000>;
+	};
+
 	video_mux: mux-controller {
 		compatible = "gpio-mux";
 		#mux-state-cells = <0>;
