@@ -25,7 +25,9 @@
 		regulator-name = "fixed-1.2V";
 		regulator-min-microvolt = <1200000>;
 		regulator-max-microvolt = <1200000>;
-		regulator-boot-on;
+		/* This is a bit of a hack, this is the EN IO going into the ti bridge chip.  This should
+		 * be supported by the driver instead to toggle this EN signal. */
+		gpio = <&fpga_gpio2 17 GPIO_ACTIVE_HIGH>;
 		regulator-always-on;
 	};
 
