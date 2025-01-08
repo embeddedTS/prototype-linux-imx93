@@ -58,6 +58,7 @@
 
 			dsi_to_bridge: endpoint {
 				remote-endpoint = <&sn65dsi86_in>;
+				data-lanes = <1 2>;
 			};
 		};
 	};
@@ -100,6 +101,7 @@
 				reg = <1>;
 				sn65dsi86_out: endpoint {
 					remote-endpoint = <&dp_con_in>;
+					data-lanes = <1 2>;
 				};
 			};
 		};
