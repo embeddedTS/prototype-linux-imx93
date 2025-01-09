@@ -37,6 +37,7 @@
 
 			dsi_to_dp: endpoint {
 				remote-endpoint = <&dp_to_dsi>;
+				data-lanes = <1 2>;
 			};
 		};
 	};
@@ -55,7 +56,7 @@
 	dp_bridge_onboard: dp-bridge@68 {
 		compatible = "toshiba,tc358767"; 
 		reg = <0x68>;
-		reset-gpios = <&fpga_gpio1 27 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&fpga_gpio2 17 GPIO_ACTIVE_LOW>;
 
 		clock-names = "ref";
 		clocks = <&clk_dp>;
