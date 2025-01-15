@@ -448,6 +448,7 @@ imx93-ts4300-16-ts-rd-mipi2dp-ti-dtbs := imx93-ts4300-16.dtb \
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16-ts-rd-mipi2dp-ti.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts9370.dtb \
+			  imx93-ts9390.dtb \
 			  imx93-ts4300-16.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx91-9x9-qsb.dtb \
