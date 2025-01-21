@@ -536,8 +536,8 @@
 	#size-cells = <0>;
 	clock-frequency = <400000>;
 	pinctrl-names = "default", "sleep";
-	pinctrl-0 = <&pinctrl_lpi2c1>;
-	pinctrl-1 = <&pinctrl_lpi2c1>;
+	pinctrl-0 = <&pinctrl_lpi2c4>;
+	pinctrl-1 = <&pinctrl_lpi2c4>;
 	status = "okay";
 
 	/* ST IIS2MDL (magnetometer) */
