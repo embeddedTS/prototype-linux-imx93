@@ -375,6 +375,24 @@
 	status = "disabled";
 };
 
+&dphy {
+	status = "disabled";
+};
+
+&dsi {
+	status = "disabled";
+
+	ports {
+		port@1 {
+			reg = <1>;
+
+			dsi_to_dp: endpoint {
+				remote-endpoint = <&dp_to_dsi>;
+			};
+		};
+	};
+};
+
 &eqos {
 	pinctrl-names = "default", "sleep";
 	pinctrl-0 = <&pinctrl_eqos>;
@@ -571,6 +589,31 @@
 		compatible = "technologic,supervisor-rtc";
 		reg = <0x60>;
 		wakeup-source;
+	};
+
+	dp_bridge: dp-bridge@68 {
+		compatible = "toshiba,tc358767";
+		reg = <0x68>;
+		reset-gpios = <&fpga_gpio1 27 GPIO_ACTIVE_HIGH>;
+
+		clock-names = "ref";
+		clocks = <&clk_dp>;
+
+		toshiba,hpd-pin = <0>;
+		status = "disabled";
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				dp_to_dsi: endpoint {
+					remote-endpoint = <&dsi_to_dp>;
+				};
+			};
+		};
 	};
 
 	/* ST ISM330DLCTR (gyro/accelerometer) (ism6dhcx) */
