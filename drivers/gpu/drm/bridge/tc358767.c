@@ -39,53 +39,10 @@
 #include <drm/drm_print.h>
 #include <drm/drm_probe_helper.h>
 
-int regmap_read_debug(struct regmap *map, uint16_t reg, uint32_t *val)
-{
-    int ret = regmap_read(map, reg, val);
-#ifdef DEBUG
-    if (ret == 0) {
-        printk(KERN_INFO "DISPLAYPORT: Read  - Address: 0x%04X, Data: 0x%08X\n", reg, *val);
-    } else {
-        printk(KERN_INFO "DISPLAYPORT: Failed to read from Address: 0x%04X\n", reg);
-    }
-#endif
-    return ret;
-}
-
-int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
-{
-    int ret = regmap_write(map, reg, val);
-#ifdef DEBUG
-    if (ret == 0) {
-        printk(KERN_INFO "DISPLAYPORT: Write - Address: 0x%04X, Data: 0x%08X\n", reg, val);
-    } else {
-        printk(KERN_INFO "DISPLAYPORT: Failed to write to Address: 0x%04X\n", reg);
-    }
-#endif
-    return ret;
-}
-
-
 /* Registers */
-
-/* DSI D-PHY Layer registers */
-#define D0W_DPHYCONTTX		0x0004
-#define CLW_DPHYCONTTX		0x0020
-#define D0W_DPHYCONTRX		0x0024
-#define D1W_DPHYCONTRX		0x0028
-#define D2W_DPHYCONTRX		0x002c
-#define D3W_DPHYCONTRX		0x0030
-#define COM_DPHYCONTRX		0x0038
-#define CLW_CNTRL		0x0040
-#define D0W_CNTRL		0x0044
-#define D1W_CNTRL		0x0048
-#define D2W_CNTRL		0x004c
-#define D3W_CNTRL		0x0050
-#define TESTMODE_CNTRL		0x0054
 
 /* PPI layer registers */
 #define PPI_STARTPPI		0x0104 /* START control bit */
-#define PPI_BUSYPPI		0x0108 /* PPI busy status */
 #define PPI_LPTXTIMECNT		0x0114 /* LPTX timing signal */
 #define LPX_PERIOD			3
 #define PPI_LANEENABLE		0x0134
@@ -102,7 +59,6 @@ int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
 
 /* DSI layer registers */
 #define DSI_STARTDSI		0x0204 /* START control bit of DSI-TX */
-#define DSI_BUSYDSI		0x0208 /* DSI busy status */
 #define DSI_LANEENABLE		0x0210 /* Enables each lane */
 #define DSI_RX_START			BIT(0)
 
@@ -112,20 +68,6 @@ int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
 #define LANEENABLE_L1EN		BIT(2)
 #define LANEENABLE_L2EN		BIT(1)
 #define LANEENABLE_L3EN		BIT(2)
-
-#define DSI_LANESTATUS0		0x0214	/* DSI lane status 0 */
-#define DSI_LANESTATUS1		0x0218	/* DSI lane status 1 */
-#define DSI_INTSTATUS		0x0220	/* Interrupt Status */
-#define DSI_INTMASK		0x0224	/* Interrupt Mask */
-#define DSI_INTCLR		0x0228	/* Interrupt Clear */
-#define DSI_LPTXTO		0x0230	/* LPTX Time Out Counter */
-
-/* DSI General Registers */
-#define DSIERRCNT		0x0300	/* DSI Error Count Register */
-
-/* DSI Application Layer Registers */
-#define APLCTRL			0x0400	/* Application layer Control Register */
-#define RDPKTLN			0x0404	/* DSI Read packet Length Register */
 
 /* Display Parallel Input Interface */
 #define DPIPXLFMT		0x0440
@@ -172,39 +114,35 @@ int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
 #define VFUEN				BIT(0)   /* Video Frame Timing Upload */
 
 /* System */
-#define TC_IDREG		0x0500	/* Chip ID and Revision ID */
-#define SYSBOOT			0x0504	/* System BootStrap Status Register */
-#define SYSSTAT			0x0508	/* System Status Register */
-#define SYSRSTENB		0x050c /* System Reset/Enable Register */
-#define ENBI2C				(1 << 0)
-#define ENBLCD0				(1 << 2)
-#define ENBBM				(1 << 3)
-#define ENBDSIRX			(1 << 4)
-#define ENBREG				(1 << 5)
-#define ENBHDCP				(1 << 8)
-#define SYSCTRL			0x0510	/* System Control Register */
+#define TC_IDREG		0x0500
+#define SYSSTAT			0x0508
+#define SYSCTRL			0x0510
 #define DP0_AUDSRC_NO_INPUT		(0 << 3)
 #define DP0_AUDSRC_I2S_RX		(1 << 3)
 #define DP0_VIDSRC_NO_INPUT		(0 << 0)
 #define DP0_VIDSRC_DSI_RX		(1 << 0)
 #define DP0_VIDSRC_DPI_RX		(2 << 0)
 #define DP0_VIDSRC_COLOR_BAR		(3 << 0)
-#define GPIOM			0x0540	/* GPIO Mode Control Register */
-#define GPIOC			0x0544	/* GPIO Direction Control Register */
-#define GPIOO			0x0548	/* GPIO Output Register */
-#define GPIOI			0x054c	/* GPIO Input Register */
-#define INTCTL_G		0x0560	/* General Interrupts Control Register */
-#define INTSTS_G		0x0564	/* General Interrupts Status Register */
+#define SYSRSTENB		0x050c
+#define ENBI2C				(1 << 0)
+#define ENBLCD0				(1 << 2)
+#define ENBBM				(1 << 3)
+#define ENBDSIRX			(1 << 4)
+#define ENBREG				(1 << 5)
+#define ENBHDCP				(1 << 8)
+#define GPIOM			0x0540
+#define GPIOC			0x0544
+#define GPIOO			0x0548
+#define GPIOI			0x054c
+#define INTCTL_G		0x0560
+#define INTSTS_G		0x0564
 
 #define INT_SYSERR		BIT(16)
 #define INT_GPIO_H(x)		(1 << (x == 0 ? 2 : 10))
 #define INT_GPIO_LC(x)		(1 << (x == 0 ? 3 : 11))
 
-#define TEST_INT_C		0x0570	/* Test Interrupts Control Register */
-#define TEST_INT_S		0x0574	/* Test Interrupts Status Register */
-
-#define INT_GP0_LCNT		0x0584	/* Interrupt GPIO0 Low Count Value Register */
-#define INT_GP1_LCNT		0x0588	/* Interrupt GPIO1 Low Count Value Register */
+#define INT_GP0_LCNT		0x0584
+#define INT_GP1_LCNT		0x0588
 
 /* Control */
 #define DP0CTL			0x0600
@@ -214,12 +152,9 @@ int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
 #define DP_EN				BIT(0)   /* Enable DPTX function */
 
 /* Clocks */
-#define DP0_VIDMNGEN0		0x0610	/* DP0 Video Force M Value Register */
-#define DP0_VIDMNGEN1		0x0614	/* DP0 Video Force N Value Register */
-#define DP0_VMNGENSTATUS	0x0618	/* DP0 Video Current M Value Register */
-#define DP0_AUDMNGEN0		0x0628	/* DP0 Audio Force M Value Register */
-#define DP0_AUDMNGEN1		0x062c	/* DP0 Audio Force N Value Register */
-#define DP0_AMNGENSTATUS	0x0630	/* DP0 Audio Current M Value Register */
+#define DP0_VIDMNGEN0		0x0610
+#define DP0_VIDMNGEN1		0x0614
+#define DP0_VMNGENSTATUS	0x0618
 
 /* Main Channel */
 #define DP0_SECSAMPLE		0x0640
@@ -289,22 +224,8 @@ int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
 #define DP0_SNKLTCHGREQ		0x06d4
 #define DP0_LTLOOPCTRL		0x06d8
 #define DP0_SNKLTCTRL		0x06e4
-#define DP0_TPATDAT0		0x06e8	/* DP0 Test Pattern bits 29 to 0 */
-#define DP0_TPATDAT1		0x06ec	/* DP0 Test Pattern bits 59 to 30 */
-#define DP0_TPATDAT2		0x06f0	/* DP0 Test Pattern bits 89 to 60 */
-#define DP0_TPATDAT3		0x06f4	/* DP0 Test Pattern bits 119 to 90 */
 
-#define AUDCFG0			0x0700	/* DP0 Audio Config0 Register */
-#define AUDCFG1			0x0704	/* DP0 Audio Config1 Register */
-#define AUDIFDATA0		0x0708	/* DP0 Audio Info Frame Bytes 3 to 0 */
-#define AUDIFDATA1		0x070c	/* DP0 Audio Info Frame Bytes 7 to 4 */
-#define AUDIFDATA2		0x0710	/* DP0 Audio Info Frame Bytes 11 to 8 */
-#define AUDIFDATA3		0x0714	/* DP0 Audio Info Frame Bytes 15 to 12 */
-#define AUDIFDATA4		0x0718	/* DP0 Audio Info Frame Bytes 19 to 16 */
-#define AUDIFDATA5		0x071c	/* DP0 Audio Info Frame Bytes 23 to 20 */
-#define AUDIFDATA6		0x0720	/* DP0 Audio Info Frame Bytes 27 to 24 */
-
-#define DP1_SRCCTRL		0x07a0	/* DP1 Control Register */
+#define DP1_SRCCTRL		0x07a0
 
 /* PHY */
 #define DP_PHY_CTRL		0x0800
@@ -317,25 +238,6 @@ int regmap_write_debug(struct regmap *map, uint16_t reg, uint32_t val)
 #define PHY_2LANE			BIT(2)   /* PHY Enable 2 lanes */
 #define PHY_A0_EN			BIT(1)   /* PHY Aux Channel0 Enable */
 #define PHY_M0_EN			BIT(0)   /* PHY Main Channel0 Enable */
-#define DP_PHY_CFG_WR		0x0810	/* DP PHY Configuration Test Write Register */
-#define DP_PHY_CFG_RD		0x0814	/* DP PHY Configuration Test Read Register */
-#define DP0_AUX_PHY_CTRL	0x0820	/* DP0 AUX PHY Control Register */
-#define DP0_MAIN_PHY_DBG	0x0840	/* DP0 Main PHY Test Debug Register */
-
-/* I2S */
-#define I2SCFG			0x0880	/* I2S Audio Config 0 Register */
-#define I2SCH0STAT0		0x0888	/* I2S Audio Channel 0 Status Bytes 3 to 0 */
-#define I2SCH0STAT1		0x088c	/* I2S Audio Channel 0 Status Bytes 7 to 4 */
-#define I2SCH0STAT2		0x0890	/* I2S Audio Channel 0 Status Bytes 11 to 8 */
-#define I2SCH0STAT3		0x0894	/* I2S Audio Channel 0 Status Bytes 15 to 12 */
-#define I2SCH0STAT4		0x0898	/* I2S Audio Channel 0 Status Bytes 19 to 16 */
-#define I2SCH0STAT5		0x089c	/* I2S Audio Channel 0 Status Bytes 23 to 20 */
-#define I2SCH1STAT0		0x08a0	/* I2S Audio Channel 1 Status Bytes 3 to 0 */
-#define I2SCH1STAT1		0x08a4	/* I2S Audio Channel 1 Status Bytes 7 to 4 */
-#define I2SCH1STAT2		0x08a8	/* I2S Audio Channel 1 Status Bytes 11 to 8 */
-#define I2SCH1STAT3		0x08ac	/* I2S Audio Channel 1 Status Bytes 15 to 12 */
-#define I2SCH1STAT4		0x08b0	/* I2S Audio Channel 1 Status Bytes 19 to 16 */
-#define I2SCH1STAT5		0x08b4	/* I2S Audio Channel 1 Status Bytes 23 to 20 */
 
 /* PLL */
 #define DP0_PLLCTRL		0x0900
@@ -433,11 +335,6 @@ static inline int tc_poll_timeout(struct tc_data *tc, unsigned int addr,
 {
 	unsigned int val;
 
-
-#ifdef DEBUG
-    printk(KERN_INFO "DISPLAYPORT: polling  - Address: 0x%04X, mask: 0x%08X, data: 0x%08X\n", addr, cond_mask, cond_value);
-#endif
-
 	return regmap_read_poll_timeout(tc->regmap, addr, val,
 					(val & cond_mask) == cond_value,
 					sleep_us, timeout_us);
@@ -519,11 +416,11 @@ static ssize_t tc_aux_transfer(struct drm_dp_aux *aux,
 	}
 
 	/* Store address */
-	ret = regmap_write_debug(tc->regmap, DP0_AUXADDR, msg->address);
+	ret = regmap_write(tc->regmap, DP0_AUXADDR, msg->address);
 	if (ret)
 		return ret;
 	/* Start transfer */
-	ret = regmap_write_debug(tc->regmap, DP0_AUXCFG0, tc_auxcfg0(msg, size));
+	ret = regmap_write(tc->regmap, DP0_AUXCFG0, tc_auxcfg0(msg, size));
 	if (ret)
 		return ret;
 
@@ -531,7 +428,7 @@ static ssize_t tc_aux_transfer(struct drm_dp_aux *aux,
 	if (ret)
 		return ret;
 
-	ret = regmap_read_debug(tc->regmap, DP0_AUXSTATUS, &auxstatus);
+	ret = regmap_read(tc->regmap, DP0_AUXSTATUS, &auxstatus);
 	if (ret)
 		return ret;
 
@@ -599,7 +496,7 @@ static int tc_pllupdate(struct tc_data *tc, unsigned int pllctrl)
 {
 	int ret;
 
-	ret = regmap_write_debug(tc->regmap, pllctrl, PLLUPDATE | PLLEN);
+	ret = regmap_write(tc->regmap, pllctrl, PLLUPDATE | PLLEN);
 	if (ret)
 		return ret;
 
@@ -609,9 +506,9 @@ static int tc_pllupdate(struct tc_data *tc, unsigned int pllctrl)
 	return 0;
 }
 
-static int tc_pxl_pll_calc(struct tc_data *tc, u32 refclk, u32 pixelclock,
-			   int *out_best_pixelclock, u32 *out_pxl_pllparam)
+static int tc_pxl_pll_en(struct tc_data *tc, u32 refclk, u32 pixelclock)
 {
+	int ret;
 	int i_pre, best_pre = 1;
 	int i_post, best_post = 1;
 	int div, best_div = 1;
@@ -649,13 +546,8 @@ static int tc_pxl_pll_calc(struct tc_data *tc, u32 refclk, u32 pixelclock,
 			continue;
 		for (i_post = 0; i_post < ARRAY_SIZE(ext_div); i_post++) {
 			for (div = 1; div <= 16; div++) {
-				u32 clk, iclk;
+				u32 clk;
 				u64 tmp;
-
-				/* PCLK PLL input unit clock ... 6..40 MHz */
-				iclk = refclk / (div * ext_div[i_pre]);
-				if (iclk < 6000000 || iclk > 40000000)
-					continue;
 
 				tmp = pixelclock * ext_div[i_pre] *
 				      ext_div[i_post] * div;
@@ -690,7 +582,8 @@ static int tc_pxl_pll_calc(struct tc_data *tc, u32 refclk, u32 pixelclock,
 		return -EINVAL;
 	}
 
-	dev_dbg(tc->dev, "PLL: got %d, delta %d\n", best_pixelclock, best_delta);
+	dev_dbg(tc->dev, "PLL: got %d, delta %d\n", best_pixelclock,
+		best_delta);
 	dev_dbg(tc->dev, "PLL: %d / %d / %d * %d / %d\n", refclk,
 		ext_div[best_pre], best_div, best_mul, ext_div[best_post]);
 
@@ -703,6 +596,11 @@ static int tc_pxl_pll_calc(struct tc_data *tc, u32 refclk, u32 pixelclock,
 	if (best_mul == 128)
 		best_mul = 0;
 
+	/* Power up PLL and switch to bypass */
+	ret = regmap_write(tc->regmap, PXL_PLLCTRL, PLLBYP | PLLEN);
+	if (ret)
+		return ret;
+
 	pxl_pllparam  = vco_hi << 24; /* For PLL VCO >= 300 MHz = 1 */
 	pxl_pllparam |= ext_div[best_pre] << 20; /* External Pre-divider */
 	pxl_pllparam |= ext_div[best_post] << 16; /* External Post-divider */
@@ -710,30 +608,7 @@ static int tc_pxl_pll_calc(struct tc_data *tc, u32 refclk, u32 pixelclock,
 	pxl_pllparam |= best_div << 8; /* Divider for PLL RefClk */
 	pxl_pllparam |= best_mul; /* Multiplier for PLL */
 
-	if (out_best_pixelclock)
-		*out_best_pixelclock = best_pixelclock;
-
-	if (out_pxl_pllparam)
-		*out_pxl_pllparam = pxl_pllparam;
-
-	return 0;
-}
-
-static int tc_pxl_pll_en(struct tc_data *tc, u32 refclk, u32 pixelclock)
-{
-	u32 pxl_pllparam = 0;
-	int ret;
-
-	ret = tc_pxl_pll_calc(tc, refclk, pixelclock, NULL, &pxl_pllparam);
-	if (ret)
-		return ret;
-
-	/* Power up PLL and switch to bypass */
-	ret = regmap_write_debug(tc->regmap, PXL_PLLCTRL, PLLBYP | PLLEN);
-	if (ret)
-		return ret;
-
-	ret = regmap_write_debug(tc->regmap, PXL_PLLPARAM, pxl_pllparam);
+	ret = regmap_write(tc->regmap, PXL_PLLPARAM, pxl_pllparam);
 	if (ret)
 		return ret;
 
@@ -744,7 +619,7 @@ static int tc_pxl_pll_en(struct tc_data *tc, u32 refclk, u32 pixelclock)
 static int tc_pxl_pll_dis(struct tc_data *tc)
 {
 	/* Enable PLL bypass, power down PLL */
-	return regmap_write_debug(tc->regmap, PXL_PLLCTRL, PLLBYP);
+	return regmap_write(tc->regmap, PXL_PLLCTRL, PLLBYP);
 }
 
 static int tc_stream_clock_calc(struct tc_data *tc)
@@ -764,13 +639,13 @@ static int tc_stream_clock_calc(struct tc_data *tc)
 	 * M/N = f_STRMCLK / f_LSCLK
 	 *
 	 */
-	return regmap_write_debug(tc->regmap, DP0_VIDMNGEN1, 32768);
+	return regmap_write(tc->regmap, DP0_VIDMNGEN1, 32768);
 }
 
 static int tc_set_syspllparam(struct tc_data *tc)
 {
 	unsigned long rate;
-	u32 pllparam = SYSCLK_SEL_LSCLK | LSCLK_DIV_1;
+	u32 pllparam = SYSCLK_SEL_LSCLK | LSCLK_DIV_2;
 
 	rate = clk_get_rate(tc->refclk);
 	switch (rate) {
@@ -791,7 +666,7 @@ static int tc_set_syspllparam(struct tc_data *tc)
 		return -EINVAL;
 	}
 
-	return regmap_write_debug(tc->regmap, SYS_PLLPARAM, pllparam);
+	return regmap_write(tc->regmap, SYS_PLLPARAM, pllparam);
 }
 
 static int tc_aux_link_setup(struct tc_data *tc)
@@ -804,7 +679,7 @@ static int tc_aux_link_setup(struct tc_data *tc)
 	if (ret)
 		goto err;
 
-	ret = regmap_write_debug(tc->regmap, DP_PHY_CTRL,
+	ret = regmap_write(tc->regmap, DP_PHY_CTRL,
 			   BGREN | PWR_SW_EN | PHY_A0_EN);
 	if (ret)
 		goto err;
@@ -833,7 +708,7 @@ static int tc_aux_link_setup(struct tc_data *tc)
 	dp0_auxcfg1 |= 0x06 << 8; /* Aux Bit Period Calculator Threshold */
 	dp0_auxcfg1 |= 0x3f << 0; /* Aux Response Timeout Timer */
 
-	ret = regmap_write_debug(tc->regmap, DP0_AUXCFG1, dp0_auxcfg1);
+	ret = regmap_write(tc->regmap, DP0_AUXCFG1, dp0_auxcfg1);
 	if (ret)
 		goto err;
 
@@ -934,48 +809,49 @@ static int tc_set_common_video_mode(struct tc_data *tc,
 		upper_margin, lower_margin, vsync_len);
 	dev_dbg(tc->dev, "total: %dx%d\n", mode->htotal, mode->vtotal);
 
+
 	/*
 	 * LCD Ctl Frame Size
 	 * datasheet is not clear of vsdelay in case of DPI
 	 * assume we do not need any delay when DPI is a source of
 	 * sync signals
 	 */
-	ret = regmap_write_debug(tc->regmap, VPCTRL0,
+	ret = regmap_write(tc->regmap, VPCTRL0,
 			   FIELD_PREP(VSDELAY, right_margin + 10) |
-			   OPXLFMT_RGB888 | FRMSYNC_ENABLED | MSF_DISABLED);
+			   OPXLFMT_RGB888 | FRMSYNC_DISABLED | MSF_DISABLED);
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, HTIM01,
+	ret = regmap_write(tc->regmap, HTIM01,
 			   FIELD_PREP(HBPR, ALIGN(left_margin, 2)) |
 			   FIELD_PREP(HPW, ALIGN(hsync_len, 2)));
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, HTIM02,
+	ret = regmap_write(tc->regmap, HTIM02,
 			   FIELD_PREP(HDISPR, ALIGN(mode->hdisplay, 2)) |
 			   FIELD_PREP(HFPR, ALIGN(right_margin, 2)));
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, VTIM01,
+	ret = regmap_write(tc->regmap, VTIM01,
 			   FIELD_PREP(VBPR, upper_margin) |
 			   FIELD_PREP(VSPR, vsync_len));
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, VTIM02,
+	ret = regmap_write(tc->regmap, VTIM02,
 			   FIELD_PREP(VFPR, lower_margin) |
 			   FIELD_PREP(VDISPR, mode->vdisplay));
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, VFUEN0, VFUEN); /* update settings */
+	ret = regmap_write(tc->regmap, VFUEN0, VFUEN); /* update settings */
 	if (ret)
 		return ret;
 
 	/* Test pattern settings */
-	ret = regmap_write_debug(tc->regmap, TSTCTL,
+	ret = regmap_write(tc->regmap, TSTCTL,
 			   FIELD_PREP(COLOR_R, 120) |
 			   FIELD_PREP(COLOR_G, 20) |
 			   FIELD_PREP(COLOR_B, 99) |
@@ -996,7 +872,7 @@ static int tc_set_dpi_video_mode(struct tc_data *tc,
 	if (tc->mode.flags & DRM_MODE_FLAG_NVSYNC)
 		value |= POCTRL_VS_POL;
 
-	return regmap_write_debug(tc->regmap, POCTRL, value);
+	return regmap_write(tc->regmap, POCTRL, value);
 }
 
 static int tc_set_edp_video_mode(struct tc_data *tc,
@@ -1028,23 +904,23 @@ static int tc_set_edp_video_mode(struct tc_data *tc,
 
 	/* DP Main Stream Attributes */
 	vid_sync_dly = hsync_len + left_margin + mode->hdisplay;
-	ret = regmap_write_debug(tc->regmap, DP0_VIDSYNCDELAY,
+	ret = regmap_write(tc->regmap, DP0_VIDSYNCDELAY,
 		 FIELD_PREP(THRESH_DLY, max_tu_symbol) |
 		 FIELD_PREP(VID_SYNC_DLY, vid_sync_dly));
 
-	ret = regmap_write_debug(tc->regmap, DP0_TOTALVAL,
+	ret = regmap_write(tc->regmap, DP0_TOTALVAL,
 			   FIELD_PREP(H_TOTAL, mode->htotal) |
 			   FIELD_PREP(V_TOTAL, mode->vtotal));
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0_STARTVAL,
+	ret = regmap_write(tc->regmap, DP0_STARTVAL,
 			   FIELD_PREP(H_START, left_margin + hsync_len) |
 			   FIELD_PREP(V_START, upper_margin + vsync_len));
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0_ACTIVEVAL,
+	ret = regmap_write(tc->regmap, DP0_ACTIVEVAL,
 			   FIELD_PREP(V_ACT, mode->vdisplay) |
 			   FIELD_PREP(H_ACT, mode->hdisplay));
 	if (ret)
@@ -1059,7 +935,7 @@ static int tc_set_edp_video_mode(struct tc_data *tc,
 	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
 		dp0_syncval |= SYNCVAL_HS_POL_ACTIVE_LOW;
 
-	ret = regmap_write_debug(tc->regmap, DP0_SYNCVAL, dp0_syncval);
+	ret = regmap_write(tc->regmap, DP0_SYNCVAL, dp0_syncval);
 	if (ret)
 		return ret;
 
@@ -1071,11 +947,11 @@ static int tc_set_edp_video_mode(struct tc_data *tc,
 	if (mode->flags & DRM_MODE_FLAG_NHSYNC)
 		dpipxlfmt |= HS_POL_ACTIVE_LOW;
 
-	ret = regmap_write_debug(tc->regmap, DPIPXLFMT, dpipxlfmt);
+	ret = regmap_write(tc->regmap, DPIPXLFMT, dpipxlfmt);
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0_MISC,
+	ret = regmap_write(tc->regmap, DP0_MISC,
 			   FIELD_PREP(MAX_TU_SYMBOL, max_tu_symbol) |
 			   FIELD_PREP(TU_SIZE, TU_SIZE_RECOMMENDED) |
 			   BPC_8);
@@ -1094,7 +970,7 @@ static int tc_wait_link_training(struct tc_data *tc)
 		return ret;
 	}
 
-	ret = regmap_read_debug(tc->regmap, DP0_LTSTAT, &value);
+	ret = regmap_read(tc->regmap, DP0_LTSTAT, &value);
 	if (ret)
 		return ret;
 
@@ -1112,21 +988,21 @@ static int tc_main_link_enable(struct tc_data *tc)
 
 	dev_dbg(tc->dev, "link enable\n");
 
-	ret = regmap_read_debug(tc->regmap, DP0CTL, &value);
+	ret = regmap_read(tc->regmap, DP0CTL, &value);
 	if (ret)
 		return ret;
 
 	if (WARN_ON(value & DP_EN)) {
-		ret = regmap_write_debug(tc->regmap, DP0CTL, 0);
+		ret = regmap_write(tc->regmap, DP0CTL, 0);
 		if (ret)
 			return ret;
 	}
 
-	ret = regmap_write_debug(tc->regmap, DP0_SRCCTRL, tc_srcctrl(tc));
+	ret = regmap_write(tc->regmap, DP0_SRCCTRL, tc_srcctrl(tc));
 	if (ret)
 		return ret;
 	/* SSCG and BW27 on DP1 must be set to the same as on DP0 */
-	ret = regmap_write_debug(tc->regmap, DP1_SRCCTRL,
+	ret = regmap_write(tc->regmap, DP1_SRCCTRL,
 		 (tc->link.spread ? DP0_SRCCTRL_SSCG : 0) |
 		 ((tc->link.rate != 162000) ? DP0_SRCCTRL_BW27 : 0));
 	if (ret)
@@ -1141,7 +1017,7 @@ static int tc_main_link_enable(struct tc_data *tc)
 	if (tc->link.num_lanes == 2)
 		dp_phy_ctrl |= PHY_2LANE;
 
-	ret = regmap_write_debug(tc->regmap, DP_PHY_CTRL, dp_phy_ctrl);
+	ret = regmap_write(tc->regmap, DP_PHY_CTRL, dp_phy_ctrl);
 	if (ret)
 		return ret;
 
@@ -1156,10 +1032,10 @@ static int tc_main_link_enable(struct tc_data *tc)
 
 	/* Reset/Enable Main Links */
 	dp_phy_ctrl |= DP_PHY_RST | PHY_M1_RST | PHY_M0_RST;
-	ret = regmap_write_debug(tc->regmap, DP_PHY_CTRL, dp_phy_ctrl);
+	ret = regmap_write(tc->regmap, DP_PHY_CTRL, dp_phy_ctrl);
 	usleep_range(100, 200);
 	dp_phy_ctrl &= ~(DP_PHY_RST | PHY_M1_RST | PHY_M0_RST);
-	ret = regmap_write_debug(tc->regmap, DP_PHY_CTRL, dp_phy_ctrl);
+	ret = regmap_write(tc->regmap, DP_PHY_CTRL, dp_phy_ctrl);
 
 	ret = tc_poll_timeout(tc, DP_PHY_CTRL, PHY_RDY, PHY_RDY, 500, 100000);
 	if (ret) {
@@ -1229,20 +1105,20 @@ static int tc_main_link_enable(struct tc_data *tc)
 	/* Clock-Recovery */
 
 	/* Set DPCD 0x102 for Training Pattern 1 */
-	ret = regmap_write_debug(tc->regmap, DP0_SNKLTCTRL,
+	ret = regmap_write(tc->regmap, DP0_SNKLTCTRL,
 			   DP_LINK_SCRAMBLING_DISABLE |
 			   DP_TRAINING_PATTERN_1);
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0_LTLOOPCTRL,
+	ret = regmap_write(tc->regmap, DP0_LTLOOPCTRL,
 			   (15 << 28) |	/* Defer Iteration Count */
 			   (15 << 24) |	/* Loop Iteration Count */
 			   (0xd << 0));	/* Loop Timer Delay */
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0_SRCCTRL,
+	ret = regmap_write(tc->regmap, DP0_SRCCTRL,
 			   tc_srcctrl(tc) | DP0_SRCCTRL_SCRMBLDIS |
 			   DP0_SRCCTRL_AUTOCORRECT |
 			   DP0_SRCCTRL_TP1);
@@ -1250,7 +1126,7 @@ static int tc_main_link_enable(struct tc_data *tc)
 		return ret;
 
 	/* Enable DP0 to start Link Training */
-	ret = regmap_write_debug(tc->regmap, DP0CTL,
+	ret = regmap_write(tc->regmap, DP0CTL,
 			   (drm_dp_enhanced_frame_cap(tc->link.dpcd) ?
 				EF_EN : 0) | DP_EN);
 	if (ret)
@@ -1271,13 +1147,13 @@ static int tc_main_link_enable(struct tc_data *tc)
 	/* Channel Equalization */
 
 	/* Set DPCD 0x102 for Training Pattern 2 */
-	ret = regmap_write_debug(tc->regmap, DP0_SNKLTCTRL,
+	ret = regmap_write(tc->regmap, DP0_SNKLTCTRL,
 			   DP_LINK_SCRAMBLING_DISABLE |
 			   DP_TRAINING_PATTERN_2);
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0_SRCCTRL,
+	ret = regmap_write(tc->regmap, DP0_SRCCTRL,
 			   tc_srcctrl(tc) | DP0_SRCCTRL_SCRMBLDIS |
 			   DP0_SRCCTRL_AUTOCORRECT |
 			   DP0_SRCCTRL_TP2);
@@ -1305,7 +1181,7 @@ static int tc_main_link_enable(struct tc_data *tc)
 	 */
 
 	/* Clear Training Pattern, set AutoCorrect Mode = 1 */
-	ret = regmap_write_debug(tc->regmap, DP0_SRCCTRL, tc_srcctrl(tc) |
+	ret = regmap_write(tc->regmap, DP0_SRCCTRL, tc_srcctrl(tc) |
 			   DP0_SRCCTRL_AUTOCORRECT);
 	if (ret)
 		return ret;
@@ -1370,11 +1246,11 @@ static int tc_main_link_disable(struct tc_data *tc)
 
 	dev_dbg(tc->dev, "link disable\n");
 
-	ret = regmap_write_debug(tc->regmap, DP0_SRCCTRL, 0);
+	ret = regmap_write(tc->regmap, DP0_SRCCTRL, 0);
 	if (ret)
 		return ret;
 
-	ret = regmap_write_debug(tc->regmap, DP0CTL, 0);
+	ret = regmap_write(tc->regmap, DP0CTL, 0);
 	if (ret)
 		return ret;
 
@@ -1388,19 +1264,19 @@ static int tc_dsi_rx_enable(struct tc_data *tc)
 	u32 value;
 	int ret;
 
-	regmap_write_debug(tc->regmap, PPI_D0S_CLRSIPOCOUNT, 5);
-	regmap_write_debug(tc->regmap, PPI_D1S_CLRSIPOCOUNT, 5);
-	regmap_write_debug(tc->regmap, PPI_D2S_CLRSIPOCOUNT, 5);
-	regmap_write_debug(tc->regmap, PPI_D3S_CLRSIPOCOUNT, 5);
-	regmap_write_debug(tc->regmap, PPI_D0S_ATMR, 0);
-	regmap_write_debug(tc->regmap, PPI_D1S_ATMR, 0);
-	regmap_write_debug(tc->regmap, PPI_TX_RX_TA, TTA_GET | TTA_SURE);
-	regmap_write_debug(tc->regmap, PPI_LPTXTIMECNT, LPX_PERIOD);
+	regmap_write(tc->regmap, PPI_D0S_CLRSIPOCOUNT, 25);
+	regmap_write(tc->regmap, PPI_D1S_CLRSIPOCOUNT, 25);
+	regmap_write(tc->regmap, PPI_D2S_CLRSIPOCOUNT, 25);
+	regmap_write(tc->regmap, PPI_D3S_CLRSIPOCOUNT, 25);
+	regmap_write(tc->regmap, PPI_D0S_ATMR, 0);
+	regmap_write(tc->regmap, PPI_D1S_ATMR, 0);
+	regmap_write(tc->regmap, PPI_TX_RX_TA, TTA_GET | TTA_SURE);
+	regmap_write(tc->regmap, PPI_LPTXTIMECNT, LPX_PERIOD);
 
 	value = ((LANEENABLE_L0EN << tc->dsi->lanes) - LANEENABLE_L0EN) |
 		LANEENABLE_CLEN;
-	regmap_write_debug(tc->regmap, PPI_LANEENABLE, value);
-	regmap_write_debug(tc->regmap, DSI_LANEENABLE, value);
+	regmap_write(tc->regmap, PPI_LANEENABLE, value);
+	regmap_write(tc->regmap, DSI_LANEENABLE, value);
 
 	/* Set input interface */
 	value = DP0_AUDSRC_NO_INPUT;
@@ -1408,14 +1284,14 @@ static int tc_dsi_rx_enable(struct tc_data *tc)
 		value |= DP0_VIDSRC_COLOR_BAR;
 	else
 		value |= DP0_VIDSRC_DSI_RX;
-	ret = regmap_write_debug(tc->regmap, SYSCTRL, value);
+	ret = regmap_write(tc->regmap, SYSCTRL, value);
 	if (ret)
 		return ret;
 
 	usleep_range(120, 150);
 
-	regmap_write_debug(tc->regmap, PPI_STARTPPI, PPI_START_FUNCTION);
-	regmap_write_debug(tc->regmap, DSI_STARTDSI, DSI_RX_START);
+	regmap_write(tc->regmap, PPI_STARTPPI, PPI_START_FUNCTION);
+	regmap_write(tc->regmap, DSI_STARTDSI, DSI_RX_START);
 
 	return 0;
 }
@@ -1430,7 +1306,7 @@ static int tc_dpi_rx_enable(struct tc_data *tc)
 		value |= DP0_VIDSRC_COLOR_BAR;
 	else
 		value |= DP0_VIDSRC_DPI_RX;
-	return regmap_write_debug(tc->regmap, SYSCTRL, value);
+	return regmap_write(tc->regmap, SYSCTRL, value);
 }
 
 static int tc_dpi_stream_enable(struct tc_data *tc)
@@ -1523,7 +1399,7 @@ static int tc_edp_stream_enable(struct tc_data *tc)
 	value = VID_MN_GEN | DP_EN;
 	if (drm_dp_enhanced_frame_cap(tc->link.dpcd))
 		value |= EF_EN;
-	ret = regmap_write_debug(tc->regmap, DP0CTL, value);
+	ret = regmap_write(tc->regmap, DP0CTL, value);
 	if (ret)
 		return ret;
 	/*
@@ -1535,7 +1411,7 @@ static int tc_edp_stream_enable(struct tc_data *tc)
 	 */
 	usleep_range(500, 1000);
 	value |= VID_EN;
-	ret = regmap_write_debug(tc->regmap, DP0CTL, value);
+	ret = regmap_write(tc->regmap, DP0CTL, value);
 	if (ret)
 		return ret;
 
@@ -1637,18 +1513,6 @@ static int tc_dpi_atomic_check(struct drm_bridge *bridge,
 			       struct drm_crtc_state *crtc_state,
 			       struct drm_connector_state *conn_state)
 {
-	struct tc_data *tc = bridge_to_tc(bridge);
-	int adjusted_clock = 0;
-	int ret;
-
-	ret = tc_pxl_pll_calc(tc, clk_get_rate(tc->refclk),
-			      crtc_state->mode.clock * 1000,
-			      &adjusted_clock, NULL);
-	if (ret)
-		return ret;
-
-	crtc_state->adjusted_mode.clock = adjusted_clock / 1000;
-
 	/* DSI->DPI interface clock limitation: upto 100 MHz */
 	if (crtc_state->adjusted_mode.clock > 100000)
 		return -EINVAL;
@@ -1661,18 +1525,6 @@ static int tc_edp_atomic_check(struct drm_bridge *bridge,
 			       struct drm_crtc_state *crtc_state,
 			       struct drm_connector_state *conn_state)
 {
-	struct tc_data *tc = bridge_to_tc(bridge);
-	int adjusted_clock = 0;
-	int ret;
-
-	ret = tc_pxl_pll_calc(tc, clk_get_rate(tc->refclk),
-			      crtc_state->mode.clock * 1000,
-			      &adjusted_clock, NULL);
-	if (ret)
-		return ret;
-
-	crtc_state->adjusted_mode.clock = adjusted_clock / 1000;
-
 	/* DPI->(e)DP interface clock limitation: upto 154 MHz */
 	if (crtc_state->adjusted_mode.clock > 154000)
 		return -EINVAL;
@@ -1701,7 +1553,7 @@ tc_edp_mode_valid(struct drm_bridge *bridge,
 	u32 req, avail;
 	u32 bits_per_pixel = 24;
 
-	/* DPI->(e)DP interface clock limitation: up to 154 MHz */
+	/* DPI interface clock limitation: upto 154 MHz */
 	if (mode->clock > 154000)
 		return MODE_CLOCK_HIGH;
 
@@ -1723,19 +1575,19 @@ static void tc_bridge_mode_set(struct drm_bridge *bridge,
 	drm_mode_copy(&tc->mode, mode);
 }
 
-static const struct drm_edid *tc_edid_read(struct drm_bridge *bridge,
-					   struct drm_connector *connector)
+static struct edid *tc_get_edid(struct drm_bridge *bridge,
+				struct drm_connector *connector)
 {
 	struct tc_data *tc = bridge_to_tc(bridge);
 
-	return drm_edid_read_ddc(connector, &tc->aux.ddc);
+	return drm_get_edid(connector, &tc->aux.ddc);
 }
 
 static int tc_connector_get_modes(struct drm_connector *connector)
 {
 	struct tc_data *tc = connector_to_tc(connector);
 	int num_modes;
-	const struct drm_edid *drm_edid;
+	struct edid *edid;
 	int ret;
 
 	ret = tc_get_display_props(tc);
@@ -1750,10 +1602,9 @@ static int tc_connector_get_modes(struct drm_connector *connector)
 			return num_modes;
 	}
 
-	drm_edid = tc_edid_read(&tc->bridge, connector);
-	drm_edid_connector_update(connector, drm_edid);
-	num_modes = drm_edid_connector_add_modes(connector);
-	drm_edid_free(drm_edid);
+	edid = tc_get_edid(&tc->bridge, connector);
+	num_modes = drm_add_edid_modes(connector, edid);
+	kfree(edid);
 
 	return num_modes;
 }
@@ -1769,13 +1620,11 @@ static enum drm_connector_status tc_bridge_detect(struct drm_bridge *bridge)
 	u32 val;
 	int ret;
 
-	ret = regmap_read_debug(tc->regmap, GPIOI, &val);
+	ret = regmap_read(tc->regmap, GPIOI, &val);
 	if (ret)
 		return connector_status_unknown;
 
 	conn = val & BIT(tc->hpd_pin);
-
-	conn = !conn;
 
 	if (conn)
 		return connector_status_connected;
@@ -1877,7 +1726,6 @@ static void tc_edp_bridge_detach(struct drm_bridge *bridge)
 }
 
 #define MAX_INPUT_SEL_FORMATS	1
-#define MAX_OUTPUT_SEL_FORMATS	1
 
 static u32 *
 tc_dpi_atomic_get_input_bus_fmts(struct drm_bridge *bridge,
@@ -1903,28 +1751,6 @@ tc_dpi_atomic_get_input_bus_fmts(struct drm_bridge *bridge,
 	return input_fmts;
 }
 
-static u32 *
-tc_edp_atomic_get_output_bus_fmts(struct drm_bridge *bridge,
-				  struct drm_bridge_state *bridge_state,
-				  struct drm_crtc_state *crtc_state,
-				  struct drm_connector_state *conn_state,
-				  unsigned int *num_output_fmts)
-{
-	u32 *output_fmts;
-
-	*num_output_fmts = 0;
-
-	output_fmts = kcalloc(MAX_OUTPUT_SEL_FORMATS, sizeof(*output_fmts),
-			      GFP_KERNEL);
-	if (!output_fmts)
-		return NULL;
-
-	output_fmts[0] = MEDIA_BUS_FMT_RGB888_1X24;
-	*num_output_fmts = 1;
-
-	return output_fmts;
-}
-
 static const struct drm_bridge_funcs tc_dpi_bridge_funcs = {
 	.attach = tc_dpi_bridge_attach,
 	.mode_valid = tc_dpi_mode_valid,
@@ -1947,12 +1773,10 @@ static const struct drm_bridge_funcs tc_edp_bridge_funcs = {
 	.atomic_enable = tc_edp_bridge_atomic_enable,
 	.atomic_disable = tc_edp_bridge_atomic_disable,
 	.detect = tc_bridge_detect,
-	.edid_read = tc_edid_read,
+	.get_edid = tc_get_edid,
 	.atomic_duplicate_state = drm_atomic_helper_bridge_duplicate_state,
 	.atomic_destroy_state = drm_atomic_helper_bridge_destroy_state,
 	.atomic_reset = drm_atomic_helper_bridge_reset,
-	.atomic_get_input_bus_fmts = drm_atomic_helper_bridge_propagate_bus_fmt,
-	.atomic_get_output_bus_fmts = tc_edp_atomic_get_output_bus_fmts,
 };
 
 static bool tc_readable_reg(struct device *dev, unsigned int reg)
@@ -2009,16 +1833,16 @@ static bool tc_readable_reg(struct device *dev, unsigned int reg)
 	case 0x1f4:
 	/* DSI Protocol Layer */
 	case DSI_STARTDSI:
-	case DSI_BUSYDSI:
+	case 0x208:
 	case DSI_LANEENABLE:
-	case DSI_LANESTATUS0:
-	case DSI_LANESTATUS1:
-	case DSI_INTSTATUS:
+	case 0x214:
+	case 0x218:
+	case 0x220:
 	case 0x224:
 	case 0x228:
 	case 0x230:
 	/* DSI General */
-	case DSIERRCNT:
+	case 0x300:
 	/* DSI Application Layer */
 	case 0x400:
 	case 0x404:
@@ -2154,20 +1978,13 @@ static bool tc_readable_reg(struct device *dev, unsigned int reg)
 }
 
 static const struct regmap_range tc_volatile_ranges[] = {
-	regmap_reg_range(PPI_BUSYPPI, PPI_BUSYPPI),
-	regmap_reg_range(DSI_BUSYDSI, DSI_BUSYDSI),
-	regmap_reg_range(DSI_LANESTATUS0, DSI_INTSTATUS),
-	regmap_reg_range(DSIERRCNT, DSIERRCNT),
-	regmap_reg_range(VFUEN0, VFUEN0),
-	regmap_reg_range(SYSSTAT, SYSSTAT),
-	regmap_reg_range(GPIOI, GPIOI),
-	regmap_reg_range(INTSTS_G, INTSTS_G),
-	regmap_reg_range(DP0_VMNGENSTATUS, DP0_VMNGENSTATUS),
-	regmap_reg_range(DP0_AMNGENSTATUS, DP0_AMNGENSTATUS),
 	regmap_reg_range(DP0_AUXWDATA(0), DP0_AUXSTATUS),
 	regmap_reg_range(DP0_LTSTAT, DP0_SNKLTCHGREQ),
 	regmap_reg_range(DP_PHY_CTRL, DP_PHY_CTRL),
 	regmap_reg_range(DP0_PLLCTRL, PXL_PLLCTRL),
+	regmap_reg_range(VFUEN0, VFUEN0),
+	regmap_reg_range(INTSTS_G, INTSTS_G),
+	regmap_reg_range(GPIOI, GPIOI),
 };
 
 static const struct regmap_access_table tc_volatile_table = {
@@ -2175,28 +1992,12 @@ static const struct regmap_access_table tc_volatile_table = {
 	.n_yes_ranges = ARRAY_SIZE(tc_volatile_ranges),
 };
 
-static const struct regmap_range tc_precious_ranges[] = {
-	regmap_reg_range(SYSSTAT, SYSSTAT),
-};
-
-static const struct regmap_access_table tc_precious_table = {
-	.yes_ranges = tc_precious_ranges,
-	.n_yes_ranges = ARRAY_SIZE(tc_precious_ranges),
-};
-
-static const struct regmap_range tc_non_writeable_ranges[] = {
-	regmap_reg_range(PPI_BUSYPPI, PPI_BUSYPPI),
-	regmap_reg_range(DSI_BUSYDSI, DSI_BUSYDSI),
-	regmap_reg_range(DSI_LANESTATUS0, DSI_INTSTATUS),
-	regmap_reg_range(TC_IDREG, SYSSTAT),
-	regmap_reg_range(GPIOI, GPIOI),
-	regmap_reg_range(DP0_LTSTAT, DP0_SNKLTCHGREQ),
-};
-
-static const struct regmap_access_table tc_writeable_table = {
-	.no_ranges = tc_non_writeable_ranges,
-	.n_no_ranges = ARRAY_SIZE(tc_non_writeable_ranges),
-};
+static bool tc_writeable_reg(struct device *dev, unsigned int reg)
+{
+	return (reg != TC_IDREG) &&
+	       (reg != DP0_LTSTAT) &&
+	       (reg != DP0_SNKLTCHGREQ);
+}
 
 static const struct regmap_config tc_regmap_config = {
 	.name = "tc358767",
@@ -2204,11 +2005,10 @@ static const struct regmap_config tc_regmap_config = {
 	.val_bits = 32,
 	.reg_stride = 4,
 	.max_register = PLL_DBG,
-	.cache_type = REGCACHE_MAPLE,
+	.cache_type = REGCACHE_RBTREE,
 	.readable_reg = tc_readable_reg,
 	.volatile_table = &tc_volatile_table,
-	.precious_table = &tc_precious_table,
-	.wr_table = &tc_writeable_table,
+	.writeable_reg = tc_writeable_reg,
 	.reg_format_endian = REGMAP_ENDIAN_BIG,
 	.val_format_endian = REGMAP_ENDIAN_LITTLE,
 };
@@ -2219,7 +2019,7 @@ static irqreturn_t tc_irq_handler(int irq, void *arg)
 	u32 val;
 	int r;
 
-	r = regmap_read_debug(tc->regmap, INTSTS_G, &val);
+	r = regmap_read(tc->regmap, INTSTS_G, &val);
 	if (r)
 		return IRQ_NONE;
 
@@ -2229,12 +2029,12 @@ static irqreturn_t tc_irq_handler(int irq, void *arg)
 	if (val & INT_SYSERR) {
 		u32 stat = 0;
 
-		regmap_read_debug(tc->regmap, SYSSTAT, &stat);
+		regmap_read(tc->regmap, SYSSTAT, &stat);
 
 		dev_err(tc->dev, "syserr %x\n", stat);
 	}
 
-	if (tc->hpd_pin >= 0 && tc->bridge.dev && tc->aux.drm_dev) {
+	if (tc->hpd_pin >= 0 && tc->bridge.dev) {
 		/*
 		 * H is triggered when the GPIO goes high.
 		 *
@@ -2251,7 +2051,7 @@ static irqreturn_t tc_irq_handler(int irq, void *arg)
 			drm_kms_helper_hotplug_event(tc->bridge.dev);
 	}
 
-	regmap_write_debug(tc->regmap, INTSTS_G, val);
+	regmap_write(tc->regmap, INTSTS_G, val);
 
 	return IRQ_HANDLED;
 }
@@ -2342,7 +2142,6 @@ static int tc_probe_edp_bridge_endpoint(struct tc_data *tc)
 	ret = drm_of_find_panel_or_bridge(dev->of_node, 2, 0, &panel, NULL);
 	if (ret && ret != -ENODEV)
 		return ret;
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 
 	if (panel) {
 		struct drm_bridge *panel_bridge;
@@ -2353,9 +2152,7 @@ static int tc_probe_edp_bridge_endpoint(struct tc_data *tc)
 
 		tc->panel_bridge = panel_bridge;
 		tc->bridge.type = DRM_MODE_CONNECTOR_eDP;
-		printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	} else {
-		printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 		tc->bridge.type = DRM_MODE_CONNECTOR_DisplayPort;
 	}
 
@@ -2430,13 +2227,9 @@ static int tc_probe(struct i2c_client *client)
 
 	tc->dev = dev;
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
-
 	ret = tc_probe_bridge_endpoint(tc);
 	if (ret)
 		return ret;
-
-	printk(KERN_INFO "HERE, DRM SHOULD BE SET UP: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 
 	tc->refclk = devm_clk_get_enabled(dev, "ref");
 	if (IS_ERR(tc->refclk))
@@ -2456,7 +2249,6 @@ static int tc_probe(struct i2c_client *client)
 		usleep_range(5000, 10000);
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	/* Reset GPIO is optional */
 	tc->reset_gpio = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(tc->reset_gpio))
@@ -2467,7 +2259,6 @@ static int tc_probe(struct i2c_client *client)
 		usleep_range(5000, 10000);
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	tc->regmap = devm_regmap_init_i2c(client, &tc_regmap_config);
 	if (IS_ERR(tc->regmap)) {
 		ret = PTR_ERR(tc->regmap);
@@ -2475,7 +2266,6 @@ static int tc_probe(struct i2c_client *client)
 		return ret;
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	ret = of_property_read_u32(dev->of_node, "toshiba,hpd-pin",
 				   &tc->hpd_pin);
 	if (ret) {
@@ -2487,10 +2277,9 @@ static int tc_probe(struct i2c_client *client)
 		}
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	if (client->irq > 0) {
 		/* enable SysErr */
-		regmap_write_debug(tc->regmap, INTCTL_G, INT_SYSERR);
+		regmap_write(tc->regmap, INTCTL_G, INT_SYSERR);
 
 		ret = devm_request_threaded_irq(dev, client->irq,
 						NULL, tc_irq_handler,
@@ -2504,14 +2293,12 @@ static int tc_probe(struct i2c_client *client)
 		tc->have_irq = true;
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
-	ret = regmap_read_debug(tc->regmap, TC_IDREG, &tc->rev);
+	ret = regmap_read(tc->regmap, TC_IDREG, &tc->rev);
 	if (ret) {
 		dev_err(tc->dev, "can not read device ID: %d\n", ret);
 		return ret;
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	if ((tc->rev != 0x6601) && (tc->rev != 0x6603)) {
 		dev_err(tc->dev, "invalid device ID: 0x%08x\n", tc->rev);
 		return -EINVAL;
@@ -2519,7 +2306,6 @@ static int tc_probe(struct i2c_client *client)
 
 	tc->assr = (tc->rev == 0x6601); /* Enable ASSR for eDP panels */
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	if (!tc->reset_gpio) {
 		/*
 		 * If the reset pin isn't present, do a software reset. It isn't
@@ -2536,16 +2322,15 @@ static int tc_probe(struct i2c_client *client)
 		usleep_range(5000, 10000);
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	if (tc->hpd_pin >= 0) {
 		u32 lcnt_reg = tc->hpd_pin == 0 ? INT_GP0_LCNT : INT_GP1_LCNT;
 		u32 h_lc = INT_GPIO_H(tc->hpd_pin) | INT_GPIO_LC(tc->hpd_pin);
 
 		/* Set LCNT to 2ms */
-		regmap_write_debug(tc->regmap, lcnt_reg,
+		regmap_write(tc->regmap, lcnt_reg,
 			     clk_get_rate(tc->refclk) * 2 / 1000);
 		/* We need the "alternate" mode for HPD */
-		regmap_write_debug(tc->regmap, GPIOM, BIT(tc->hpd_pin));
+		regmap_write(tc->regmap, GPIOM, BIT(tc->hpd_pin));
 
 		if (tc->have_irq) {
 			/* enable H & LC */
@@ -2559,13 +2344,11 @@ static int tc_probe(struct i2c_client *client)
 			return ret;
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	tc->bridge.of_node = dev->of_node;
 	drm_bridge_add(&tc->bridge);
 
 	i2c_set_clientdata(client, tc);
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	if (tc->input_connector_dsi) {			/* DSI input */
 		ret = tc_mipi_dsi_host_attach(tc);
 		if (ret) {
@@ -2574,7 +2357,6 @@ static int tc_probe(struct i2c_client *client)
 		}
 	}
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
 	return 0;
 }
 
