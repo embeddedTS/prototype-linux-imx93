@@ -220,9 +220,11 @@
         lcd_lvds0: panel0 {
             compatible = "panel-lvds";
             /* backlight = <&backlight>;*/
-	    data-mapping = "jeida-24";
+	    data-mapping = "vesa-24";
 	    width-mm = <154>;  // 7"
 	    height-mm = <86>;
+	    enable-gpios = <&fpga_gpio2 3 GPIO_ACTIVE_LOW>;
+	    reset-gpios = <&fpga_gpio2 4 GPIO_ACTIVE_HIGH>;
 	    status = "okay";
 
             panel-timing {
