@@ -365,11 +365,11 @@
 };
 
 &dphy {
-	status = "disabled";
+	status = "okay";
 };
 
 &dsi {
-	status = "disabled";
+	status = "okay";
 
 	ports {
 		port@1 {
@@ -589,7 +589,7 @@
 		clocks = <&clk_dp>;
 
 		toshiba,hpd-pin = <0>;
-		status = "disabled";
+		status = "okay";
 
 		ports {
 			#address-cells = <1>;
