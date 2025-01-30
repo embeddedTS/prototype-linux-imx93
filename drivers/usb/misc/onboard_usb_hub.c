@@ -5,6 +5,7 @@
  * Copyright (c) 2022, Google LLC
  */
 
+#include <linux/clk.h>
 #include <linux/device.h>
 #include <linux/export.h>
 #include <linux/gpio/consumer.h>
@@ -60,16 +61,26 @@ struct onboard_hub {
 	bool going_away;
 	struct list_head udev_list;
 	struct mutex lock;
+	struct clk *clk;
 };
 
 static int onboard_hub_power_on(struct onboard_hub *hub)
 {
 	int err;
 
-	err = regulator_bulk_enable(hub->pdata->num_supplies, hub->supplies);
+	err = clk_prepare_enable(hub->clk);
 	if (err) {
-		dev_err(hub->dev, "failed to enable supplies: %d\n", err);
+		dev_err(hub->dev, "failed to enable clock: %pe\n",
+			ERR_PTR(err));
 		return err;
+	}
+
+	err = regulator_bulk_enable(hub->pdata->num_supplies,
+				    hub->supplies);
+	if (err) {
+		dev_err(hub->dev, "failed to enable supplies: %pe\n",
+			ERR_PTR(err));
+		goto disable_clk;
 	}
 
 	fsleep(hub->pdata->reset_us);
@@ -78,6 +89,10 @@ static int onboard_hub_power_on(struct onboard_hub *hub)
 	hub->is_powered_on = true;
 
 	return 0;
+
+disable_clk:
+	clk_disable_unprepare(hub->clk);
+	return err;
 }
 
 static int onboard_hub_power_off(struct onboard_hub *hub)
@@ -86,11 +101,15 @@ static int onboard_hub_power_off(struct onboard_hub *hub)
 
 	gpiod_set_value_cansleep(hub->reset_gpio, 1);
 
-	err = regulator_bulk_disable(hub->pdata->num_supplies, hub->supplies);
+	err = regulator_bulk_disable(hub->pdata->num_supplies,
+				     hub->supplies);
 	if (err) {
-		dev_err(hub->dev, "failed to disable supplies: %d\n", err);
+		dev_err(hub->dev, "failed to disable supplies: %pe\n",
+			ERR_PTR(err));
 		return err;
 	}
+
+	clk_disable_unprepare(hub->clk);
 
 	hub->is_powered_on = false;
 
@@ -275,6 +294,11 @@ static int onboard_hub_probe(struct platform_device *pdev)
 						  GPIOD_OUT_HIGH);
 	if (IS_ERR(hub->reset_gpio))
 		return dev_err_probe(dev, PTR_ERR(hub->reset_gpio), "failed to get reset GPIO\n");
+
+	hub->clk = devm_clk_get_optional(dev, NULL);
+	if (IS_ERR(hub->clk))
+		return dev_err_probe(dev, PTR_ERR(hub->clk),
+				     "failed to get clock\n");
 
 	hub->dev = dev;
 	mutex_init(&hub->lock);
