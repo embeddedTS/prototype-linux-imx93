@@ -439,17 +439,22 @@ dtb-$(CONFIG_ARCH_MXC) += imx93-9x9-qsb.dtb \
 			  imx93-9x9-qsb-rpmsg.dtb imx93-9x9-qsb-rpmsg-lpv.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx93-tqma9352-mba93xxla.dtb
 
-imx93-ts4300-16-ts-rd-mipi2dp-dtbs := imx93-ts4300-16.dtb \
+imx93-ts4300-16-dtbs := imx93-ts4300.dtb imx93-ts4300-16.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16.dtb
+
+imx93-ts4300-16-ts-rd-mipi2dp-dtbs := imx93-ts4300.dtb \
+				      imx93-ts4300-16.dtbo \
 				      imx93-ts4300-16-ts-rd-mipi2dp.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16-ts-rd-mipi2dp.dtb
 
-imx93-ts4300-16-ts-rd-mipi2dp-ti-dtbs := imx93-ts4300-16.dtb \
-				      imx93-ts4300-16-ts-rd-mipi2dp-ti.dtbo
+imx93-ts4300-16-ts-rd-mipi2dp-ti-dtbs := imx93-ts4300.dtb \
+					 imx93-ts4300-16.dtbo \
+					 imx93-ts4300-16-ts-rd-mipi2dp-ti.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16-ts-rd-mipi2dp-ti.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts9370.dtb \
 			  imx93-ts9390.dtb \
-			  imx93-ts4300-16.dtb
+			  imx93-ts4300.dtb
 
 dtb-$(CONFIG_ARCH_MXC) += imx91-9x9-qsb.dtb \
 			  imx91-9x9-qsb-can1.dtb \
