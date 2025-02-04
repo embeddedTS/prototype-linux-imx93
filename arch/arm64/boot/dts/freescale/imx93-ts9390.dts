@@ -228,19 +228,17 @@
 	    status = "okay";
 
             panel-timing {
-                clock-frequency = <51200000>;
-                hactive = <1024>;
-                vactive = <600>;
-                hback-porch = <150>;
-                hfront-porch = <150>;
-                hsync-len = <20>;
-                vback-porch = <20>;
-                vfront-porch = <12>;
-                vsync-len = <3>;
-                hsync-active = <0>;
-                vsync-active = <0>;
-                de-active = <1>;
-                pixelclk-active = <1>;
+                        clock-frequency = <62400000>;
+                        hactive = <1024>;
+                        vactive = <600>;
+                        hback-porch = <160>;
+                        hfront-porch = <160>;
+                        hsync-len = <10>;
+                        vback-porch = <23>;
+                        vfront-porch = <15>;
+                        vsync-len = <5>;
+                        de-active = <1>;
+                        pixelclk-active = <1>;
             };
 
 	    port {
@@ -438,7 +436,7 @@
 
 &lcdif {
 	status = "okay";
-	assigned-clock-rates = <484000000>, <121000000>, <400000000>, <133333333>;
+	assigned-clock-rates = <445333333>, <148444444>, <400000000>, <133333333>;
 };
 
 /* i2c-0 */
@@ -659,6 +657,18 @@
 	pinctrl-0 = <&pinctrl_uart8>;
 	rts-gpios = <&gpio2 11 GPIO_ACTIVE_HIGH>;
 	//linux,rs485-enabled-at-boot-time;
+	status = "okay";
+};
+
+&media_blk_ctrl {
+	status = "okay";
+};
+
+&mu1 {
+	status = "okay";
+};
+
+&mu2 {
 	status = "okay";
 };
 
@@ -1047,22 +1057,5 @@
 &wdog3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_wdog>;
-	status = "okay";
-};
-
-&lcdif {
-	status = "okay";
-	assigned-clock-rates = <445333333>, <148444444>, <400000000>, <133333333>;
-};
-
-&mu1 {
-	status = "okay";
-};
-
-&mu2 {
-	status = "okay";
-};
-
-&media_blk_ctrl {
 	status = "okay";
 };
