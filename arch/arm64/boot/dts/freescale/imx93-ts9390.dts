@@ -460,7 +460,6 @@
 		reg = <0x25>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pmic>;
-		/* Passed through the FPGA, PMIC_INT# to CCM_CLK03 */
 		interrupt-parent = <&gpio1>;
 		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
 		nxp,i2c-lt-enable;
@@ -544,6 +543,16 @@
 	pinctrl-0 = <&pinctrl_lpi2c4>;
 	pinctrl-1 = <&pinctrl_lpi2c4>;
 	status = "okay";
+
+	ctp: ctp@14 {
+		compatible = "goodix,gt911";
+		reg = <0x14>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_ctpc>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <28 IRQ_TYPE_NONE>;
+		irq-gpios = <&gpio4 28 GPIO_ACTIVE_HIGH>; /* CCM_CLKO3 */
+	};
 
 	/* ST IIS2MDL (magnetometer) */
 	magnet: magnetometer@1e {
@@ -764,6 +773,12 @@
 };
 
 &iomuxc {
+	pinctrl_ctpc: ctpcgrp {
+		fsl,pins = <
+			MX93_PAD_CCM_CLKO3__GPIO4_IO28  		0x40000b9e
+		>;
+	};
+
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX93_PAD_ENET1_MDC__ENET_QOS_MDC			0x57e
