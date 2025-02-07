@@ -119,6 +119,22 @@
 		};
 	};
 
+	reg_can1_sw5v2: regulator-can1-en {
+		compatible = "regulator-fixed";
+		regulator-name = "EN_CAN1_N";
+		regulator-min-microvolt = <5200000>;
+		regulator-max-microvolt = <5200000>;
+		gpio = <&fpga_gpio1 1 GPIO_ACTIVE_LOW>;
+	};
+
+	reg_can2_sw5v2: regulator-can2-en {
+		compatible = "regulator-fixed";
+		regulator-name = "EN_CAN2_N";
+		regulator-min-microvolt = <5200000>;
+		regulator-max-microvolt = <5200000>;
+		gpio = <&fpga_gpio1 2 GPIO_ACTIVE_LOW>;
+	};
+
 	reg_usdhc2_vmmc: regulator-usdhc2 {
 		compatible = "regulator-fixed";
 		pinctrl-names = "default";
@@ -432,6 +448,20 @@
 			reset-deassert-us = <50000>;
 		};
 	};
+};
+
+&flexcan1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan1>;
+	xceiver-supply = <&reg_can1_sw5v2>;
+	status = "okay";
+};
+
+&flexcan2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_flexcan2>;
+	xceiver-supply = <&reg_can2_sw5v2>;
+	status = "okay";
 };
 
 &lcdif {
@@ -852,6 +882,22 @@
 			MX93_PAD_ENET1_TD3__GPIO4_IO02				0x31e
 			MX93_PAD_ENET1_TXC__GPIO4_IO07                          0x31e
 			MX93_PAD_ENET1_TX_CTL__GPIO4_IO06                       0x31e
+		>;
+	};
+
+	/* CAN1 is taken from micfil/i2s audio */
+	pinctrl_flexcan1: flexcan1grp {
+		fsl,pins = <
+			MX93_PAD_PDM_CLK__CAN1_TX       	0x139e
+			MX93_PAD_PDM_BIT_STREAM0__CAN1_RX	0x139e
+		>;
+	};
+
+	/* JTAG_CPU_TDI & TDO are unavailable when CAN2 is configured */
+	pinctrl_flexcan2: flexcan2grp {
+		fsl,pins = <
+			MX93_PAD_DAP_TDI__CAN2_TX       	0x139e
+			MX93_PAD_DAP_TDO_TRACESWO__CAN2_RX	0x139e
 		>;
 	};
 
