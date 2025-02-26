@@ -24,7 +24,8 @@
 #include <linux/bitops.h>
 
 #define IRQ_STATUS 0x0
-#define IRQ_ENABLE 0x4
+#define IRQ_MASK_SET 0x4
+#define IRQ_MASK_CLR 0x8
 
 struct ts9370_irq_data {
 	struct regmap *regmap;
@@ -35,35 +36,20 @@ struct ts9370_irq_data {
 static void ts9370_irq_mask(struct irq_data *d)
 {
 	struct ts9370_irq_data *data = irq_data_get_irq_chip_data(d);
-	u32 reg;
-
-	if (!regmap_read(data->regmap, IRQ_ENABLE, &reg)) {
-		reg &= ~BIT(d->hwirq);
-		regmap_write(data->regmap, IRQ_ENABLE, reg);
-	}
+	u32 reg = BIT(d->hwirq);
+	regmap_write(data->regmap, IRQ_MASK_SET, reg);
 }
 
 static void ts9370_irq_unmask(struct irq_data *d)
 {
 	struct ts9370_irq_data *data = irq_data_get_irq_chip_data(d);
-	u32 reg;
-
-	if (!regmap_read(data->regmap, IRQ_ENABLE, &reg)) {
-		reg |= BIT(d->hwirq);
-		regmap_write(data->regmap, IRQ_ENABLE, reg);
-	}
-}
-
-static void ts9370_irq_print_chip(struct irq_data *d, struct seq_file *p)
-{
-	struct ts9370_irq_data *data = irq_data_get_irq_chip_data(d);
-	seq_printf(p, "%s", dev_name(&data->dev));
+	u32 reg = BIT(d->hwirq);
+	regmap_write(data->regmap, IRQ_MASK_CLR, reg);
 }
 
 static const struct irq_chip ts9370_chip = {
 	.irq_mask = ts9370_irq_mask,
 	.irq_unmask = ts9370_irq_unmask,
-	.irq_print_chip = ts9370_irq_print_chip,
 };
 
 static int ts9370_irqdomain_map(struct irq_domain *d, unsigned int irq,
@@ -141,7 +127,7 @@ static int ts9370_ic_probe(struct platform_device *pdev)
 	}
 
 	/* Disable all interrupts initially */
-	regmap_write(data->regmap, IRQ_ENABLE, 0x0);
+	regmap_write(data->regmap, IRQ_MASK_SET, 0xffffffff);
 
 	parent_irq = platform_get_irq(pdev, 0);
 	if (parent_irq < 0) {
