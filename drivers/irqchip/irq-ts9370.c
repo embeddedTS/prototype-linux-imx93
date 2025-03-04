@@ -31,12 +31,15 @@ struct ts9370_irq_data {
 	struct regmap *regmap;
 	struct device *dev;
 	struct irq_domain *domain;
+	raw_spinlock_t lock;
+	int irq;
 };
 
 static void ts9370_irq_mask(struct irq_data *d)
 {
 	struct ts9370_irq_data *data = irq_data_get_irq_chip_data(d);
 	u32 reg = BIT(d->hwirq);
+
 	regmap_write(data->regmap, IRQ_MASK_SET, reg);
 }
 
@@ -44,6 +47,7 @@ static void ts9370_irq_unmask(struct irq_data *d)
 {
 	struct ts9370_irq_data *data = irq_data_get_irq_chip_data(d);
 	u32 reg = BIT(d->hwirq);
+
 	regmap_write(data->regmap, IRQ_MASK_CLR, reg);
 }
 
@@ -57,7 +61,7 @@ static int ts9370_irqdomain_map(struct irq_domain *d, unsigned int irq,
 {
 	struct ts9370_irq_data *data = d->host_data;
 
-	irq_set_chip_and_handler(irq, &ts9370_chip, handle_simple_irq);
+	irq_set_chip_and_handler(irq, &ts9370_chip, handle_level_irq);
 	irq_set_chip_data(irq, data);
 	irq_set_noprobe(irq);
 
@@ -69,33 +73,23 @@ static const struct irq_domain_ops ts9370_ic_ops = {
 	.xlate = irq_domain_xlate_onecell,
 };
 
-static void ts9370_ic_chained_handle_irq(struct irq_desc *desc)
+static irqreturn_t ts9370_irq_handler(int irq, void *priv)
 {
-	struct ts9370_irq_data *data = irq_desc_get_handler_data(desc);
-	struct irq_chip *chip = irq_desc_get_chip(desc);
-	u32 status;
+	struct ts9370_irq_data *data = (struct ts9370_irq_data *)priv;
+	unsigned long lock_flags;
+	unsigned long status;
+	int i;
 
-	if (regmap_read(data->regmap, IRQ_STATUS, &status)) {
-		handle_bad_irq(desc);
-		return;
+	regmap_read(data->regmap, IRQ_STATUS, (u32 *)&status);
+
+	for_each_set_bit(i, &status, 32) {
+		raw_spin_lock_irqsave(&data->lock, lock_flags);
+		generic_handle_domain_irq(data->domain, i);
+		raw_spin_unlock_irqrestore(&data->lock,
+					   lock_flags);
 	}
 
-	chained_irq_enter(chip, desc);
-
-	if (unlikely(status == 0)) {
-		handle_bad_irq(desc);
-		goto out;
-	}
-
-	do {
-		unsigned int bit = __ffs(status);
-
-		generic_handle_domain_irq(data->domain, bit);
-		status &= ~BIT(bit);
-	} while (status);
-
-	out:
-	chained_irq_exit(chip, desc);
+	return IRQ_HANDLED;
 }
 
 static int ts9370_ic_probe(struct platform_device *pdev)
@@ -108,7 +102,7 @@ static int ts9370_ic_probe(struct platform_device *pdev)
 		.val_bits = 32,
 	};
 	void __iomem *base;
-	int parent_irq;
+	int ret = 0;
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
 	if (!data)
@@ -129,11 +123,12 @@ static int ts9370_ic_probe(struct platform_device *pdev)
 	/* Disable all interrupts initially */
 	regmap_write(data->regmap, IRQ_MASK_SET, 0xffffffff);
 
-	parent_irq = platform_get_irq(pdev, 0);
-	if (parent_irq < 0) {
-		dev_err(dev, "failed to get parent IRQ\n");
-		return parent_irq;
-	}
+	raw_spin_lock_init(&data->lock);
+	platform_set_drvdata(pdev, data);
+
+	data->irq = platform_get_irq(pdev, 0);
+	if (data->irq < 0)
+		return data->irq;
 
 	data->domain = irq_domain_add_linear(node, 32, &ts9370_ic_ops, data);
 	if (!data->domain) {
@@ -141,12 +136,18 @@ static int ts9370_ic_probe(struct platform_device *pdev)
 		return -ENOMEM;
 	}
 
-	irq_set_chained_handler_and_data(parent_irq,
-	ts9370_ic_chained_handle_irq, data);
-
-	platform_set_drvdata(pdev, data);
+	ret = request_irq(data->irq, ts9370_irq_handler,
+			  0, dev_name(dev), data);
+	if (ret)
+		goto out_domain_remove;
 
 	return 0;
+
+out_domain_remove:
+	irq_domain_remove(data->domain);
+	irq_dispose_mapping(data->irq);
+
+	return ret;
 }
 
 static int ts9370_ic_remove(struct platform_device *pdev)
