@@ -341,7 +341,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <0>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 
 			gpio-line-names =
@@ -363,7 +363,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <1>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 
 			gpio-line-names =
@@ -385,7 +385,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <2>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 
 			gpio-line-names =
@@ -604,8 +604,6 @@
 	ctp: ctp@14 {
 		compatible = "goodix,gt911";
 		reg = <0x14>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&pinctrl_ctpc>;
 		interrupt-parent = <&fpga_gpio2>;
 		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
 		irq-gpios = <&fpga_gpio2 2 GPIO_ACTIVE_HIGH>;
@@ -797,16 +795,15 @@
 
 &usdhc3 {
 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
-	pinctrl-0 = <&pinctrl_usdhc2>, <&pinctrl_usdhc2_gpio>;
-	pinctrl-1 = <&pinctrl_usdhc2_100mhz>, <&pinctrl_usdhc2_gpio>;
-	pinctrl-2 = <&pinctrl_usdhc2_200mhz>, <&pinctrl_usdhc2_gpio>;
-	cd-gpios = <&gpio3 00 GPIO_ACTIVE_LOW>;
-	fsl,cd-gpio-wakeup-disable;
-	vmmc-supply = <&reg_usdhc2_vmmc>;
+	pinctrl-0 = <&pinctrl_usdhc3>;
+	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
+	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
+	mmc-pwrseq = <&sdio_pwrseq>;
 	bus-width = <4>;
+	keep-power-in-suspend;
+	non-removable;
+	wakeup-source;
 	status = "okay";
-	no-sdio;
-	no-mmc;
 };
 
 /* CPU GPIO2: 43810000.gpio (per i.MX93 RM (ch. 29/GPIO) */
@@ -820,12 +817,6 @@
 };
 
 &iomuxc {
-	pinctrl_ctpc: ctpcgrp {
-		fsl,pins = <
-			MX93_PAD_CCM_CLKO3__GPIO4_IO28  		0x40000b9e
-		>;
-	};
-
 	pinctrl_eqos: eqosgrp {
 		fsl,pins = <
 			MX93_PAD_ENET1_MDC__ENET_QOS_MDC			0x57e
