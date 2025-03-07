@@ -321,7 +321,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <0>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 
 			gpio-line-names =
@@ -344,7 +344,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <1>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 
 			gpio-line-names =
@@ -367,7 +367,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <2>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 
 			gpio-line-names =

@@ -174,7 +174,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <0>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 
@@ -187,7 +187,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <1>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 
@@ -200,7 +200,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <2>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 
@@ -213,7 +213,7 @@
 
 			interrupt-parent = <&fpga_irqc>;
 			interrupts = <3>;
-			#interrupt-cells = <3>;
+			#interrupt-cells = <2>;
 			interrupt-controller;
 		};
 	};
