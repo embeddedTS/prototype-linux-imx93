@@ -491,11 +491,8 @@
 		compatible = "st,lis2mdl";
 		reg = <0x1e>;
 		st,drdy-int-pin = <1>;
-		/*
-		st,drdy-int-pin = <1>;
-		interrupt-parent = <&gpio1>;
-		interrupts = <14 IRQ_TYPE_LEVEL_HIGH>;
-		*/
+		interrupt-parent = <&fpga_gpio2>;
+		interrupts = <0 IRQ_TYPE_EDGE_RISING>;
 	};
 
 	supervisor: supervisor@54 {
@@ -548,10 +545,8 @@
 	ism330: gyro@6a {
 		compatible = "st,ism330dhcx";
 		reg = <0x6a>;
-		/*
-		interrupt-parent = <&gpio5>;
-		interrupts = <0 IRQ_TYPE_LEVEL_HIGH>;
-		*/
+		interrupt-parent = <&fpga_gpio2>;
+		interrupts = <1 IRQ_TYPE_EDGE_RISING>;
 	};
 };
 
