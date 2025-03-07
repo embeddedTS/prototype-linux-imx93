@@ -319,13 +319,30 @@
 		nxp,fspi-individual-mode;
 		ranges = <0 0x28000000 0x10000000>;
 
-		status = "okay";
+		fpga_irqc: irq@28000020 {
+			compatible = "technologic,ts9370-irqc";
+			reg = <0x20 0x20>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_fpga_irq>;
+
+			interrupt-parent = <&gpio4>;
+			interrupts = <28 IRQ_TYPE_LEVEL_HIGH>;
+
+			#interrupt-cells = <1>;
+			interrupt-controller;
+		};
 
 		fpga_gpio0: gpio@28000040 {
-			compatible = "technologic,ts7820-gpio";
+			compatible = "technologic,ts9370-gpio";
 			reg = <0x40 0x40>;
+
 			gpio-controller;
 			#gpio-cells = <2>;
+
+			interrupt-parent = <&fpga_irqc>;
+			interrupts = <0>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
 
 			gpio-line-names =
 				"EN_GREEN_LED_N",    "EN_YEL_LED_N",      "EN_RED_LED_N",      "",
@@ -339,10 +356,15 @@
 		};
 
 		fpga_gpio1: gpio@28000080 {
-			compatible = "technologic,ts7820-gpio";
+			compatible = "technologic,ts9370-gpio";
 			reg = <0x80 0x40>;
 			gpio-controller;
 			#gpio-cells = <2>;
+
+			interrupt-parent = <&fpga_irqc>;
+			interrupts = <1>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
 
 			gpio-line-names =
 				"EN_2ND_PORT_232",   "EN_CAN_1",    "EN_CAN_2",      "",
@@ -356,10 +378,15 @@
 		};
 
 		fpga_gpio2: gpio@280000c0 {
-			compatible = "technologic,ts7820-gpio";
+			compatible = "technologic,ts9370-gpio";
 			reg = <0xC0 0x40>;
 			gpio-controller;
 			#gpio-cells = <2>;
+
+			interrupt-parent = <&fpga_irqc>;
+			interrupts = <2>;
+			#interrupt-cells = <3>;
+			interrupt-controller;
 
 			gpio-line-names =
 				"EN_ADC_3_12V",   "EN_ADC_1_2_12V", "",               "",
@@ -948,6 +975,12 @@
 			MX93_PAD_ENET2_TD3__GPIO4_IO16			0x51e
 			MX93_PAD_ENET2_TXC__GPIO4_IO21                  0x51e
 			MX93_PAD_ENET2_TX_CTL__GPIO4_IO20               0x51e
+		>;
+	};
+
+	pinctrl_fpga_irq: fpgairqgrp {
+		fsl,pins = <
+			MX93_PAD_CCM_CLKO3__GPIO4_IO28		0x40000b9e
 		>;
 	};
 
