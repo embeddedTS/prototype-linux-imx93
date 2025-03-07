@@ -606,9 +606,9 @@
 		reg = <0x14>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_ctpc>;
-		interrupt-parent = <&gpio4>;
-		interrupts = <28 IRQ_TYPE_NONE>;
-		irq-gpios = <&gpio4 28 GPIO_ACTIVE_HIGH>; /* CCM_CLKO3 */
+		interrupt-parent = <&fpga_gpio2>;
+		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+		irq-gpios = <&fpga_gpio2 2 GPIO_ACTIVE_HIGH>;
 	};
 
 	/* ST IIS2MDL (magnetometer) */
