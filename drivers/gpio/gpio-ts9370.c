@@ -15,7 +15,6 @@
 #include <linux/regmap.h>
 #include <linux/mm.h>
 
-
 /* Read Decodes */
 #define TS9370_OE_IN		0x00
 #define TS9370_OUT_DATA		0x08
@@ -239,7 +238,6 @@ static const struct irq_chip ts9370_irq_chip = {
 	GPIOCHIP_IRQ_RESOURCE_HELPERS,
 };
 
-/* Example regmap configuration */
 static const struct regmap_config ts9370_gpio_regmap_config = {
 	.reg_bits = 32,
 	.val_bits = 32,
@@ -274,24 +272,6 @@ static int ts9370_gpio_probe(struct platform_device *pdev)
 		return PTR_ERR(p->map);
 
 	/* Default to mask all interrupts */
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
-	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
 	regmap_write(p->map, TS9370_IRQ_MASK_AND_ACK, 0xFFFFFFFF);
 
 	p->chip.label = dev_name(dev);
