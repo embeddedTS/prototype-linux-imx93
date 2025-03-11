@@ -314,7 +314,7 @@
 		assigned-clock-parents = <&clk IMX93_CLK_SYS_PLL_PFD1>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_flexspi>;
-		assigned-clock-rates = <66666666>;
+		assigned-clock-rates = <40000000>;
 		nxp,ahb-bus-only;
 		nxp,fspi-individual-mode;
 		ranges = <0 0x28000000 0x10000000>;
