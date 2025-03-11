@@ -408,6 +408,7 @@ struct nxp_fspi {
 	struct mutex lock;
 	struct pm_qos_request pm_qos_req;
 	int selected;
+	unsigned long rate;
 };
 
 static inline int needs_ip_only(struct nxp_fspi *f)
@@ -1185,8 +1186,6 @@ static const struct spi_controller_mem_ops nxp_fspi_mem_ops = {
 static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
 {
 	const int cs = 0;
-	//const int rate = 66000000;
-	const int rate = 40000000;
 	const int pads = 4;
 
 	void __iomem *base = f->iobase;
@@ -1209,7 +1208,7 @@ static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
 
 	nxp_fspi_clk_disable_unprep(f);
 
-	ret = clk_set_rate(f->clk, rate);
+	ret = clk_set_rate(f->clk, f->rate);
 	if (ret)
 		return ret;
 
@@ -1230,7 +1229,7 @@ static int nxp_fspi_ahb_bus_setup(struct nxp_fspi *f)
 	 * If clock rate > 100MHz, then switch from DLL override mode to
 	 * DLL calibration mode.
 	 */
-	if (rate > 100000000)
+	if (f->rate > 100000000)
 		nxp_fspi_dll_calibration(f);
 
 	f->selected = cs;
@@ -1440,6 +1439,7 @@ static int nxp_fspi_probe(struct platform_device *pdev)
 			ret = PTR_ERR(f->clk);
 			goto err_put_ctrl;
 		}
+		f->rate = clk_get_rate(f->clk);
 
 		ret = nxp_fspi_clk_prep_enable(f);
 		if (ret) {
