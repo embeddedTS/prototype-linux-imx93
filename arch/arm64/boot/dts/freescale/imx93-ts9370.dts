@@ -332,7 +332,7 @@
 				"MIKRO_SPI_CLK",     "MIKRO_SPI_CS_N",    "MIKRO_SPI_MISO",    "MIKRO_SPI_MOSI",
 				"MIKRO_RESET_N",     "MIKRO_AN",          "MIKRO_PWM",         "MIKRO_INT",
 				"EN_LS_OUT_1",       "EN_LS_OUT_2",       "EN_LS_OUT_3",       "EN_LS_OUT_4",
-				"EN_HS_SW",          "DIO_FAULT_N",       "MAGNET_IRQ",        "GYRO_IRQ";
+				"EN_HS_SW",          "DIO_FAULT_N",       "NIM_STATUS",        "";
 		};
 
 		fpga_gpio1: gpio@28000080 {
@@ -348,14 +348,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"EN_2ND_PORT_232",   "EN_CAN_1",    "EN_CAN_2",      "",
-				"",                  "",            "",              "",
-				"",                  "",            "",              "",
-				"",                  "",            "",              "",
-				"",                  "",            "",              "",
-				"",                  "",            "PUSH_SW_PADN",  "AN_SEL_0",
-				"AN_SEL_1",          "EN_CL_1_2",   "EN_CL_3",       "DP_RESET_PADN",
-				"NO_SCAP_CHRG_PADN", "EN_SPKR_AMP", "BT_EN",         "WIFI_EN";
+				"EN_2ND_PORT_232",   "EN_CAN_1",     "EN_CAN_2",       "",
+				"USB_HUB_RESET#",    "PUSH_SW_N",    "",               "",
+				"",                  "",             "",               "",
+				"",                  "",             "",               "",
+				"",                  "",             "",               "",
+				"",                  "EN_ADC_3_12V", "EN_ADC_1_2_12V", "AN_SEL_0",
+				"AN_SEL_1",          "EN_CL_1_2",    "EN_CL_3",        "DP_RESET_PADN",
+				"NO_SCAP_CHRG_PADN", "EN_SPKR_AMP",  "BT_EN",          "WIFI_EN";
 		};
 
 		fpga_gpio2: gpio@280000c0 {
@@ -371,7 +371,7 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"EN_ADC_3_12V",   "EN_ADC_1_2_12V", "",               "",
+				"MAGNET_IRQ",     "GYRO_IRQ",       "",               "",
 				"",               "",               "",               "",
 				"",               "",               "",               "",
 				"",               "",               "",               "",
@@ -675,9 +675,14 @@
 	status = "okay";
 };
 
-/* lpuart3 / serial@42570000: TBD via MAX10 */
+&lpuart3 { /* serial@42570000: Secondary RS-485 (or RS-232) */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_uart8>;
+	linux,rs485-enabled-at-boot-time;
+	status = "okay";
+};
 
-&lpuart5 { /* serial@42590000: MikroE */
+&lpuart5 { /* serial@42590000: Airgain/Nimbelink/XBee */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart5>;
 	status = "okay";
@@ -697,10 +702,9 @@
 	status = "okay";
 };
 
-&lpuart8 { /* serial@426a0000: Secondary RS-485 (or RS-232) */
+&lpuart8 { /* serial@426a0000: Mikroe */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart8>;
-	//linux,rs485-enabled-at-boot-time;
 	status = "okay";
 };
 
@@ -973,8 +977,18 @@
 		>;
 	};
 
+	/* uart3/LP2: Secondary RS-485/232 */
+	pinctrl_uart3: uart3grp {
+		fsl,pins = <
+			MX93_PAD_GPIO_IO15__LPUART3_RX			0x31e
+			MX93_PAD_GPIO_IO14__LPUART3_TX			0x31e
+			MX93_PAD_GPIO_IO17__LPUART3_RTS_B		0x31e
+			MX93_PAD_GPIO_IO16__LPUART3_CTS_B		0x31e
+		
+		>;
+	};
 
-	/* uart5/LP4: Mikroe */
+	/* uart5/LP4: Nimbelink */
 	pinctrl_uart5: uart5grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO00__LPUART5_TX			0x31e
@@ -997,16 +1011,15 @@
 		fsl,pins = <
 			MX93_PAD_GPIO_IO08__LPUART7_TX			0x31e
 			MX93_PAD_GPIO_IO09__LPUART7_RX			0x31e
-			MX93_PAD_GPIO_IO11__LPUART7_RTS_B		0x51e /* TXEN */
+			MX93_PAD_GPIO_IO11__LPUART7_RTS_B		0x31e
 		>;
 	};
 
-	/* uart8/LP7: Secondary RS-485/232 */
+	/* uart8/LP7: Mikroe */
 	pinctrl_uart8: uart8grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO12__LPUART8_TX			0x31e
 			MX93_PAD_GPIO_IO13__LPUART8_RX			0x31e
-			MX93_PAD_GPIO_IO15__LPUART8_RTS_B		0x51e /* TXEN */
 		>;
 	};
 
