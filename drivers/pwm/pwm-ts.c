@@ -169,7 +169,7 @@ static int ts_pwm_probe(struct platform_device *pdev)
 	ts->chip.base = -1;
 	ts->chip.npwm = 1;
 	ts->chip.of_xlate = of_pwm_single_xlate;
-	ts->chip.of_pwm_n_cells = 1;
+	ts->chip.of_pwm_n_cells = 2;
 
 	pm_runtime_enable(&pdev->dev);
 
