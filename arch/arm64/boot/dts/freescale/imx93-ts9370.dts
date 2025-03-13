@@ -677,7 +677,7 @@
 
 &lpuart3 { /* serial@42570000: Secondary RS-485 (or RS-232) */
 	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_uart8>;
+	pinctrl-0 = <&pinctrl_uart3>;
 	linux,rs485-enabled-at-boot-time;
 	status = "okay";
 };
