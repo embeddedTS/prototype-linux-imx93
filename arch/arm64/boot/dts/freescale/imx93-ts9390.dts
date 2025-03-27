@@ -728,6 +728,12 @@
 	pinctrl-0 = <&pinctrl_uart6>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "qcom,qca9377-bt";
+		enable-gpios = <&fpga_gpio1 30 GPIO_ACTIVE_HIGH>;
+		max-speed = <2000000>;
+	};
 };
 
 &lpuart7 { /* serial@42690000: Primary RS-485 */
