@@ -240,6 +240,29 @@
 		reset-gpios = <&fpga_gpio1 31 GPIO_ACTIVE_LOW>;
 	};
 
+	sound-tac5111 {
+		compatible = "fsl,imx-audio-card";
+		model = "imx-tac5111";
+		status = "okay";
+		pri-dai-link {
+			link-name = "tac5111";
+			format = "i2s";
+			fsl,mclk-equal-bclk;
+			cpu {
+				sound-dai = <&sai1>;
+			};
+			codec {
+				sound-dai = <&tac5x1x>;
+			};
+
+		};
+                /*
+                simple-audio-card,routing =
+			"AIN1", "Line In",
+		"Line Out", "OUT1";
+                */
+	};
+
 	/* See imx93-ts9390-simple-panel.dtso or ... */
 	/* ek73215bcga LCD panel */
 	lcd_lvds0: panel0 {
@@ -643,6 +666,25 @@
 		interrupts = <0 IRQ_TYPE_EDGE_RISING>;
 	};
 
+        tac5x1x: tac5x1x@50 {
+                compatible = "ti,tac5111";
+                reg = <0x50>;
+                #sound-dai-cells = <0>;
+                avdd-supply = <&reg_vref_3v3>;
+                iovdd-supply = <&reg_vref_3v3>;
+                ti,vref = <0>;
+                ti,micbias-vg = <3>;  /* make it same as AVDD */
+                ti,gpios-func = <0>, <0>, <0>;
+                ti,gpi1-func = <0>;
+                ti,gpios-drive = <0>, <0>, <0>;
+                ti,gpa-gpio = <0>;
+                ti,in-ch-en = <1>;
+                ti,out-ch-en = <1>;
+                ti,incl-ac-coup = <0>;
+                ti,incl-se-inm = <0>;
+                ti,gpa-threshold = <75>, <186>;
+        };
+
 	supervisor: supervisor@54 {
 		compatible = "technologic,supervisor";
 		reg = <0x54>;
@@ -746,6 +788,27 @@
 &lpuart8 { /* serial@426a0000: Mikroe */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart8>;
+	status = "okay";
+};
+
+&sai1 {
+	#sound-dai-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_sai1>;
+
+	clocks = <&clk IMX93_CLK_SAI1_IPG>, <&clk IMX93_CLK_DUMMY>,
+		 <&clk IMX93_CLK_SAI1_GATE>,
+		 <&clk IMX93_CLK_DUMMY>, <&clk IMX93_CLK_DUMMY>,
+		 <&clk IMX93_CLK_AUDIO_PLL>;
+	clock-names = "bus", "mclk0",
+		      "mclk1",
+		      "mclk2", "mclk3",
+		      "pll8k";
+	assigned-clocks = <&clk IMX93_CLK_SAI1>;
+	assigned-clock-parents = <&clk IMX93_CLK_AUDIO_PLL>;
+	assigned-clock-rates = <12288000>;
+
+	fsl,sai-asynchronous;
 	status = "okay";
 };
 
