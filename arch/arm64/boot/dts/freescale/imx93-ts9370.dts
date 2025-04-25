@@ -525,6 +525,7 @@
 		clocks = <&clk_dp>;
 
 		toshiba,hpd-pin = <0>;
+		toshiba,hpd-active-low;
 		status = "okay";
 
 		ports {
