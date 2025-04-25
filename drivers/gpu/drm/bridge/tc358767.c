@@ -389,6 +389,7 @@ struct tc_data {
 
 	/* HPD pin number (0 or 1) or -ENODEV */
 	int			hpd_pin;
+	bool			hpd_active_low;
 };
 
 static int tc_mipi_dsi_host_attach(struct tc_data *tc);
@@ -1773,6 +1774,9 @@ static enum drm_connector_status tc_bridge_detect(struct drm_bridge *bridge)
 
 	conn = val & BIT(tc->hpd_pin);
 
+	if (tc->hpd_active_low)
+		conn = !conn;
+
 	if (!conn)
 		return connector_status_connected;
 	else
@@ -2506,6 +2510,9 @@ static int tc_probe(struct i2c_client *client)
 			return -EINVAL;
 		}
 	}
+
+	if (of_property_read_bool(dev->of_node, "toshiba,hpd-active-low"))
+		tc->hpd_active_low = true;
 
 	if (client->irq > 0) {
 		/* enable SysErr */
