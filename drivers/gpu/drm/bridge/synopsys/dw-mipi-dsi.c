@@ -275,6 +275,8 @@ struct dw_mipi_dsi {
 	const struct dw_mipi_dsi_plat_data *plat_data;
 };
 
+static bool request_lp11_state = false;
+
 /*
  * Check if either a link to a master or slave is present
  */
@@ -1010,8 +1012,6 @@ static void dw_mipi_dsi_mode_set(struct dw_mipi_dsi *dsi,
 	int ret;
 	u32 lanes = dw_mipi_dsi_get_lanes(dsi);
 
-	printk(KERN_INFO "HERE: %s, %s, %d\n", __FILE__, __FUNCTION__, __LINE__);
-
 	clk_prepare_enable(dsi->pclk);
 
 	ret = phy_ops->get_lane_mbps(priv_data, adjusted_mode, dsi->mode_flags,
@@ -1029,7 +1029,7 @@ static void dw_mipi_dsi_mode_set(struct dw_mipi_dsi *dsi,
 	dw_mipi_dsi_line_timer_config(dsi, adjusted_mode);
 	dw_mipi_dsi_vertical_timing_config(dsi, adjusted_mode);
 
-	dw_mipi_dsi_dphy_init(dsi);
+	// dw_mipi_dsi_dphy_init(dsi);
 	dw_mipi_dsi_dphy_timing_config(dsi);
 	dw_mipi_dsi_dphy_interface_config(dsi);
 
@@ -1216,6 +1216,45 @@ static void dw_mipi_dsi_debugfs_remove(struct dw_mipi_dsi *dsi) { }
 
 #endif /* CONFIG_DEBUG_FS */
 
+
+static void dw_mipi_set_lp11(struct dw_mipi_dsi *dsi)
+{
+	const struct dw_mipi_dsi_phy_ops *phy_ops = dsi->plat_data->phy_ops;
+	void *priv_data = dsi->plat_data->priv_data;
+	struct drm_display_mode *adjusted_mode;
+
+	adjusted_mode = devm_kzalloc(dsi->dev, sizeof(*adjusted_mode), GFP_KERNEL);
+	adjusted_mode->clock = 148444;
+	dsi->lanes = 4;
+	int ret;
+
+	ret = phy_ops->get_lane_mbps(priv_data, adjusted_mode, dsi->mode_flags,
+				     4uL, dsi->format, &dsi->lane_mbps);
+	if (ret)
+		DRM_DEBUG_DRIVER("Phy get_lane_mbps() failed\n");
+
+	dw_mipi_dsi_init(dsi);
+
+	dw_mipi_dsi_dphy_init(dsi);
+
+	dw_mipi_dsi_dphy_timing_config(dsi);
+
+	dw_mipi_dsi_dphy_interface_config(dsi);
+
+	dw_mipi_dsi_clear_err(dsi);
+
+	ret = phy_ops->init(priv_data);
+	if (ret)
+		DRM_DEBUG_DRIVER("Phy init() failed\n");
+
+	dw_mipi_dsi_dphy_enable(dsi);
+
+	if (phy_ops->power_on)
+		phy_ops->power_on(dsi->plat_data->priv_data);
+
+	devm_kfree(dsi->dev, (void *)adjusted_mode);
+}
+
 static struct dw_mipi_dsi *
 __dw_mipi_dsi_probe(struct platform_device *pdev,
 		    const struct dw_mipi_dsi_plat_data *plat_data)
@@ -1301,6 +1340,11 @@ __dw_mipi_dsi_probe(struct platform_device *pdev,
 	dsi->bridge.of_node = pdev->dev.of_node;
 #endif
 	drm_bridge_add(&dsi->bridge);
+
+	if (!request_lp11_state) {
+		dw_mipi_set_lp11(dsi);
+		request_lp11_state = true;
+	}
 
 	return dsi;
 }
