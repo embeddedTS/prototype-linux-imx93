@@ -1777,7 +1777,7 @@ static enum drm_connector_status tc_bridge_detect(struct drm_bridge *bridge)
 	if (tc->hpd_active_low)
 		conn = !conn;
 
-	if (!conn)
+	if (conn)
 		return connector_status_connected;
 	else
 		return connector_status_disconnected;
