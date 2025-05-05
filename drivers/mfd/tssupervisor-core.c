@@ -12,6 +12,8 @@
 
 #define MODEL_TS_7250_V3 0x7250
 #define MODEL_TS_9370    0x9370
+#define MODEL_TS_9390    0x9390
+#define MODEL_TS_4300    0x4300
 
 static struct mfd_cell tssupervisor_devs[] = {
 	{
@@ -215,10 +217,23 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 		 revision & 0x7fff,
 		 revision & 0x8000 ? " (DIRTY)" : "");
 
-	if (model == MODEL_TS_7250_V3) {
+	switch (model) {
+	case MODEL_TS_7250_V3:
 		err = sysfs_create_group(&dev->kobj, &ts7250v3_attr_group);
 		if (err)
-			dev_warn(dev, "error creating sysfs entries\n");
+			dev_warn(dev, "error creating sysfs entries for the ts7250v3\n");
+		break;
+	case MODEL_TS_9370:
+	case MODEL_TS_9390:
+	case MODEL_TS_4300:
+		err = sysfs_create_group(&dev->kobj, &ts9370_attr_group);
+		if (err)
+			dev_warn(dev, "error creating sysfs entries for the ts%04x\n", model);
+		break;
+	default:
+		dev_warn(dev, "tssupervisor-core: ts_supervisor_i2c_probe: unknown model: %04X (so no sysfs entries)\n", model);
+		break;
+	}
 	}
 
 	/* Set up and register the platform devices. */
