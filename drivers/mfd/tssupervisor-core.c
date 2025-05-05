@@ -79,7 +79,7 @@ const struct regmap_config ts_supervisor_i2c_regmap = {
 EXPORT_SYMBOL_GPL(ts_supervisor_i2c_regmap);
 
 static ssize_t vbus_present_show(struct device *dev,
-				struct device_attribute *attr, char *buf)
+				 struct device_attribute *attr, char *buf)
 {
 	struct ts_supervisor *super = dev_get_drvdata(dev);
 	unsigned int reg;
@@ -94,7 +94,7 @@ static ssize_t vbus_present_show(struct device *dev,
 static DEVICE_ATTR_RO(vbus_present);
 
 static ssize_t wake_en_store(struct device *dev, struct device_attribute *attr,
-			      const char *buf, size_t count)
+			     const char *buf, size_t count)
 {
 	struct ts_supervisor *super = dev_get_drvdata(dev);
 	unsigned int ctrl_reg = 0;
@@ -109,14 +109,14 @@ static ssize_t wake_en_store(struct device *dev, struct device_attribute *attr,
 		ctrl_reg |= FLG_WAKE_EN;
 
 	ret = regmap_update_bits(super->regmap, SUPER_FLAGS,
-				  FLG_WAKE_EN,
-				  ctrl_reg);
+				 FLG_WAKE_EN,
+				 ctrl_reg);
 
 	return ret ? ret : count;
 }
 
 static ssize_t wake_en_show(struct device *dev,
-				struct device_attribute *attr, char *buf)
+			    struct device_attribute *attr, char *buf)
 {
 	struct ts_supervisor *super = dev_get_drvdata(dev);
 	unsigned int reg;
@@ -131,7 +131,7 @@ static ssize_t wake_en_show(struct device *dev,
 static DEVICE_ATTR_RW(wake_en);
 
 static ssize_t console_cfg_store(struct device *dev, struct device_attribute *attr,
-			      const char *buf, size_t count)
+				 const char *buf, size_t count)
 {
 	struct ts_supervisor *super = dev_get_drvdata(dev);
 	unsigned int ctrl_reg;
@@ -268,7 +268,7 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 	}
 
 	return mfd_add_devices(dev, 0, tssupervisor_devs,
-			      ARRAY_SIZE(tssupervisor_devs), NULL, 0, NULL);
+			       ARRAY_SIZE(tssupervisor_devs), NULL, 0, NULL);
 }
 
 static const struct i2c_device_id ts_supervisor_i2c_id[] = {
