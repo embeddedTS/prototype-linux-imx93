@@ -5,9 +5,10 @@
 struct ts_supervisor {
 	struct i2c_client *client;
 	struct regmap *regmap;
-	struct platform_device *rstc_pdev;
 	struct platform_device *adc_pdev;
-    struct platform_device *temp_pdev;
+	struct platform_device *rstc_pdev;
+	struct platform_device *silo_pdev;
+	struct platform_device *temp_pdev;
 };
 
 /* I2C Register addresses */
@@ -19,42 +20,51 @@ struct ts_supervisor {
 #define SUPER_FLAGS         16
 #define SUPER_INPUTS        24
 #define SUPER_REBOOT_REASON 32
+#define SUPER_SILO_BASE     64
+
 #define SUPER_ADC_BASE      128
 #define SUPER_ADC_LAST      159
 #define SUPER_TEMPERATURE   160
+#define SUPER_CURRENT       161
 
 enum gen_flags_t {
-    FLG_FORCE_USB_CON = (1 << 4),
-    FLG_LED_DAT = (1 << 3),
-    FLG_OVERRIDE_LED = (1 << 2),
-    FLG_WAKE_EN = (1 << 1),
+	FLG_FORCE_USB_CON = BIT(4),
+	FLG_LED_DAT = BIT(3),
+	FLG_OVERRIDE_LED = BIT(2),
+	FLG_WAKE_EN = BIT(1),
 };
 
 enum gen_inputs_t {
-    INPUTS_USB_VBUS = (1 << 0),
+	INPUTS_USB_VBUS = BIT(0),
 };
 
 enum super_features_t {
-    SUPER_FEAT_SN = (1 << 2),
-    SUPER_FEAT_FWUPD = (1 << 1),
-    SUPER_FEAT_RSTC = (1 << 0),
+	SUPER_FEAT_CT = BIT(6),        // Channel Table visible
+	SUPER_FEAT_SILO = BIT(5),
+	SUPER_FEAT_BOOT_MODE = BIT(4),
+	SUPER_FEAT_RBTR = BIT(3),      // TBI on i.MX93
+	SUPER_FEAT_SN = BIT(2),
+	SUPER_FEAT_FWUPD = BIT(1),
+	SUPER_FEAT_RSTC = BIT(0),
 };
 
 enum reboot_reasons_t {
-    REBOOT_REASON_POR = 0,
-    REBOOT_REASON_CPU_WDT = 1,
-    REBOOT_REASON_SOFTWARE_REBOOT = 2,
-    REBOOT_REASON_BROWNOUT = 3,
-    REBOOT_REASON_RTC_ALARM_REBOOT = 4,
-    REBOOT_REASON_WAKE_FROM_PWR_CYCLE = 5,
-    REBOOT_REASON_WAKE_FROM_WAKE_SIGNAL = 6,
-    REBOOT_REASON_WAKE_FROM_RTC_ALARM = 7,
-    REBOOT_REASON_WAKE_FROM_USB_VBUS = 8,
+	REBOOT_REASON_POR = 0,
+	REBOOT_REASON_CPU_WDT = 1,
+	REBOOT_REASON_SOFTWARE_REBOOT = 2,
+	REBOOT_REASON_BROWNOUT = 3,
+	REBOOT_REASON_RTC_ALARM_REBOOT = 4,
+	REBOOT_REASON_WAKE_FROM_PWR_CYCLE = 5,
+	REBOOT_REASON_WAKE_FROM_WAKE_SIGNAL = 6,
+	REBOOT_REASON_WAKE_FROM_RTC_ALARM = 7,
+	REBOOT_REASON_WAKE_FROM_USB_VBUS = 8,
 };
 
 enum super_cmds_t {
-    I2C_REBOOT = (1 << 0),
-    I2C_HALT = (1 << 1),
+	I2C_CMD_RESERVED3 = BIT(3),
+	I2C_CMD_RESERVED2 = BIT(2),
+	I2C_HALT = BIT(1),
+	I2C_REBOOT = BIT(0),
 };
 
 #endif
