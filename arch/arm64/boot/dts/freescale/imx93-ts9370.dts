@@ -504,6 +504,16 @@
 			#io-channel-cells = <1>;
 		};
 
+		supervisor_silo: supervisor_silo {
+			compatible = "technologic,tssilo-power-supply";
+			#io-channel-cells = <1>;
+
+                        /* SILO handles power_fail alone; will move to an i2c intc */
+		        interrupt-parent = <&gpio4>;
+		        interrupts = <29 IRQ_TYPE_EDGE_RISING>;
+                        power-fail-gpios = <&gpio4 29 GPIO_ACTIVE_HIGH>;
+		};
+
 		supervisor_temp: supervisor_temp {
 			compatible = "technologic,supervisor-temp";
 			#io-channel-cells = <0>;
@@ -804,6 +814,22 @@
 		"RS485_1_TXEN", "RS485_2_TXEN", "GPIO_12", "GPIO_13", "GPIO_14",
 		"GPIO_15",      "GPIO_16",      "GPIO_17", "GPIO_18", "GPIO_19",
 		"GPIO_20",      "GPIO_21";
+};
+
+/* CPU GPIO4: 43830000.gpio (per i.MX93 RM (ch. 29/GPIO) */
+&gpio4 {
+        /*
+        */
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_wizard_irq>;
+
+	gpio-line-names =
+		"",          "",          "",         "",         "",
+		"",          "",          "",         "",         "",
+		"",          "",          "",         "",         "",
+		"",          "",          "",         "",         "",
+		"",          "",          "",         "",         "",
+		"",          "",          "",         "FPGA_IRQ", "POWER_FAIL";
 };
 
 &iomuxc {
@@ -1178,6 +1204,13 @@
 	pinctrl_wdog: wdoggrp {
 		fsl,pins = <
 			MX93_PAD_WDOG_ANY__WDOG1_WDOG_ANY	0x82
+		>;
+	};
+
+	pinctrl_wizard_irq: wizard-irqgrp {
+		fsl,pins = <
+                	/* Pull down wizard_irq to avoid interrupts when Z */
+			MX93_PAD_CCM_CLKO4__GPIO4_IO29		0x4000019e
 		>;
 	};
 };
