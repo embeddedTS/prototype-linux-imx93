@@ -21,6 +21,11 @@ static struct mfd_cell tssupervisor_devs[] = {
 		.id = -1,
 	},
 	{
+		.name = "tssupervisor-silo",
+		.of_compatible = "technologic,tssilo-power-supply",
+		.id = -1,
+	},
+	{
 		.name = "tssupervisor-temp",
 		.of_compatible = "technologic,supervisor-temp",
 		.id = -1,
@@ -37,12 +42,14 @@ static const struct regmap_range ts_supervisor_read_regs[] = {
 	regmap_reg_range(16, 16), /* flags */
 	regmap_reg_range(24, 24), /* inputs */
 	regmap_reg_range(32, 32), /* reboot_reason */
-	regmap_reg_range(128, 160), /* ADCs+temp */
+	regmap_reg_range(64, 128), /* SILO */
+	regmap_reg_range(128, 191), /* ADCs + temp + current */
 };
 
 static const struct regmap_range ts_supervisor_write_regs[] = {
 	regmap_reg_range(8, 8), /* cmds */
 	regmap_reg_range(16, 16), /* flags */
+	regmap_reg_range(64, 128), /* SILO */
 };
 
 const struct regmap_access_table ts_supervisor_read_register_set = {
