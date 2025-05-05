@@ -191,6 +191,17 @@ static struct attribute_group ts9370_attr_group = {
 	.attrs	= ts9370_sysfs_entries,
 };
 
+static int ts_wizard_do_poweroff(struct sys_off_data *data)
+{
+	struct ts_supervisor *wizard_data = data->cb_data;
+	int ret;
+
+	dev_info(&wizard_data->client->dev, "ts_wizard_do_poweroff");
+	ret = regmap_update_bits(wizard_data->regmap, SUPER_CMDS, I2C_HALT, I2C_HALT);
+	if (ret < 0)
+		return ret;
+	return NOTIFY_DONE;
+}
 static int ts_supervisor_i2c_probe(struct i2c_client *client)
 {
 	struct ts_supervisor *super;
@@ -241,6 +252,13 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 		dev_warn(dev, "tssupervisor-core: ts_supervisor_i2c_probe: unknown model: %04X (so no sysfs entries)\n", model);
 		break;
 	}
+
+	if (regmap_test_bits(super->regmap, SUPER_FEATURES0, SUPER_FEAT_RSTC)) {
+		err = devm_register_sys_off_handler(dev,
+						    SYS_OFF_MODE_POWER_OFF_PREPARE,
+						    SYS_OFF_PRIO_DEFAULT,
+						    ts_wizard_do_poweroff, super);
+		BUG_ON(err);
 	}
 
 	/* Set up and register the platform devices. */
