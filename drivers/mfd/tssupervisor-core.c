@@ -15,9 +15,29 @@
 #define MODEL_TS_9390    0x9390
 #define MODEL_TS_4300    0x4300
 
-static struct mfd_cell tssupervisor_devs[] = {
+static struct mfd_cell ts7250v3_devs[] = {
 	{
 		.name = "tssupervisor-reset",
+		.of_compatible = "technologic,supervisor-reset",
+		.id = -1,
+	},
+	{
+		.name = "tssupervisor-temp",
+		.of_compatible = "technologic,supervisor-temp",
+		.id = -1,
+	},
+	{
+		.name = "tssupervisor-adc",
+		.of_compatible = "technologic,supervisor-adc",
+		.id = -1,
+	}
+};
+
+
+static struct mfd_cell ts9370_devs[] = {
+	{
+		.name = "tssupervisor-reset",
+		.of_compatible = "technologic,supervisor-reset",
 		.id = -1,
 	},
 	{
@@ -34,6 +54,11 @@ static struct mfd_cell tssupervisor_devs[] = {
 		.name = "tssupervisor-adc",
 		.of_compatible = "technologic,supervisor-adc",
 		.id = -1,
+	},
+	{
+		.name = "wizard-irq",
+		.of_compatible = "technologic,wizard-irq",
+		.id = -1,
 	}
 };
 
@@ -43,7 +68,7 @@ static const struct regmap_range ts_supervisor_read_regs[] = {
 	regmap_reg_range(24, 24), /* inputs */
 	regmap_reg_range(32, 32), /* reboot_reason */
 	regmap_reg_range(64, 128), /* SILO */
-	regmap_reg_range(128, 191), /* ADCs + temp + current */
+	regmap_reg_range(128, 160), /* ADCs+temp */
 };
 
 static const struct regmap_range ts_supervisor_write_regs[] = {
@@ -191,17 +216,6 @@ static struct attribute_group ts9370_attr_group = {
 	.attrs	= ts9370_sysfs_entries,
 };
 
-static int ts_wizard_do_poweroff(struct sys_off_data *data)
-{
-	struct ts_supervisor *wizard_data = data->cb_data;
-	int ret;
-
-	dev_info(&wizard_data->client->dev, "ts_wizard_do_poweroff");
-	ret = regmap_update_bits(wizard_data->regmap, SUPER_CMDS, I2C_HALT, I2C_HALT);
-	if (ret < 0)
-		return ret;
-	return NOTIFY_DONE;
-}
 static int ts_supervisor_i2c_probe(struct i2c_client *client)
 {
 	struct ts_supervisor *super;
@@ -241,34 +255,37 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 		if (err)
 			dev_warn(dev, "error creating sysfs entries for the ts7250v3\n");
 		break;
+
+		/* Set up and register the platform devices. */
+		for (i = 0; i < ARRAY_SIZE(ts7250v3_devs); i++) {
+			ts7250v3_devs[i].platform_data = super;
+			ts7250v3_devs[i].pdata_size = sizeof(struct ts_supervisor);
+		}
+
+		return mfd_add_devices(dev, 0, ts7250v3_devs,
+				ARRAY_SIZE(ts7250v3_devs), NULL, 0, NULL);
 	case MODEL_TS_9370:
 	case MODEL_TS_9390:
 	case MODEL_TS_4300:
 		err = sysfs_create_group(&dev->kobj, &ts9370_attr_group);
 		if (err)
 			dev_warn(dev, "error creating sysfs entries for the ts%04x\n", model);
+
+		/* Set up and register the platform devices. */
+		for (i = 0; i < ARRAY_SIZE(ts9370_devs); i++) {
+			ts9370_devs[i].platform_data = super;
+			ts9370_devs[i].pdata_size = sizeof(struct ts_supervisor);
+		}
+
+		return mfd_add_devices(dev, 0, ts9370_devs,
+				ARRAY_SIZE(ts9370_devs), NULL, 0, NULL);
+
 		break;
 	default:
 		dev_warn(dev, "tssupervisor-core: ts_supervisor_i2c_probe: unknown model: %04X (so no sysfs entries)\n", model);
 		break;
 	}
-
-	if (regmap_test_bits(super->regmap, SUPER_FEATURES0, SUPER_FEAT_RSTC)) {
-		err = devm_register_sys_off_handler(dev,
-						    SYS_OFF_MODE_POWER_OFF_PREPARE,
-						    SYS_OFF_PRIO_DEFAULT,
-						    ts_wizard_do_poweroff, super);
-		BUG_ON(err);
-	}
-
-	/* Set up and register the platform devices. */
-	for (i = 0; i < ARRAY_SIZE(tssupervisor_devs); i++) {
-		tssupervisor_devs[i].platform_data = super;
-		tssupervisor_devs[i].pdata_size = sizeof(struct ts_supervisor);
-	}
-
-	return mfd_add_devices(dev, 0, tssupervisor_devs,
-			       ARRAY_SIZE(tssupervisor_devs), NULL, 0, NULL);
+	return 0;
 }
 
 static const struct i2c_device_id ts_supervisor_i2c_id[] = {
@@ -294,5 +311,5 @@ static struct i2c_driver ts_supervisor_i2c_driver = {
 module_i2c_driver(ts_supervisor_i2c_driver);
 
 MODULE_AUTHOR("Mark Featherston <mark@embeddedts.com>");
-MODULE_DESCRIPTION("Core driver for embeddedTS Supervisory microcontroller");
+MODULE_DESCRIPTION("MFD driver for embeddedTS Supervisory microcontroller");
 MODULE_LICENSE("GPL v2");
