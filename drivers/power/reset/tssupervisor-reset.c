@@ -69,12 +69,10 @@ static struct attribute_group ts_supervisor_attr_group = {
 	.attrs	= ts_supervisor_sysfs_entries,
 };
 
-static int ts_supervisor_restart(struct notifier_block *this,
-				 unsigned long mode,
-				 void *cmd)
+static int ts_supervisor_restart(struct sys_off_data *data)
 {
+	struct ts_supervisor *super = data->cb_data;
 	int err = -ENOENT;
-	struct ts_supervisor *super = dev_get_drvdata(ts_rstc_device);
 
 	if (super) {
 		err = regmap_write(super->regmap, SUPER_CMDS, I2C_REBOOT);
@@ -87,15 +85,10 @@ static int ts_supervisor_restart(struct notifier_block *this,
 	return NOTIFY_DONE;
 }
 
-static struct notifier_block ts_supervisor_restart_nb = {
-	.notifier_call = ts_supervisor_restart,
-	.priority = 128,
-};
-
-static void ts_supervisor_poweroff(void)
+static int ts_wizard_do_poweroff(struct sys_off_data *data)
 {
+	struct ts_supervisor *super = data->cb_data;
 	int err = -ENOENT;
-	struct ts_supervisor *super = dev_get_drvdata(ts_rstc_device);
 
 	if (super) {
 		err = regmap_write(super->regmap, SUPER_CMDS, I2C_HALT);
@@ -104,21 +97,29 @@ static void ts_supervisor_poweroff(void)
 	}
 
 	dev_emerg(ts_rstc_device, "Unable to call halt (%d)", err);
+	return NOTIFY_DONE;
 }
 
 static int ts_supervisor_rstc_probe(struct platform_device *pdev)
 {
 	struct ts_supervisor *super = dev_get_drvdata(pdev->dev.parent);
 	struct device *dev = &pdev->dev;
-	uint32_t features;
 	int err = 0;
 
 	dev_set_drvdata(dev, super);
 	if (atomic_inc_return(&ts_restart_nb_refcnt) == 1) {
 		ts_rstc_device = dev;
-		pm_power_off = ts_supervisor_poweroff;
+		err = devm_register_sys_off_handler(dev,
+						    SYS_OFF_MODE_POWER_OFF_PREPARE,
+						    SYS_OFF_PRIO_DEFAULT,
+						    ts_wizard_do_poweroff,
+							super);
+		if (err) {
+			dev_err(dev, "cannot register sys off handler (err=%d)\n", err);
+			return err;
+		}
 
-		err = register_restart_handler(&ts_supervisor_restart_nb);
+		err = devm_register_restart_handler(dev, ts_supervisor_restart, super);
 		if (err) {
 			dev_err(dev, "cannot register restart handler (err=%d)\n", err);
 			atomic_dec(&ts_restart_nb_refcnt);
