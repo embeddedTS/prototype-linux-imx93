@@ -175,11 +175,6 @@
 		regulator-always-on;
 	};
 
-	/*
-	 * The numbering of the following voltage-divider io-channels must match
-	 * the ordering of the Wizard microcontroller's scan table that it selected
-	 * for the hardware configuration it determined itself to be running on.
-	 */
 	an_vin: an-vin {
 		compatible = "voltage-divider";
 		io-channels = <&supervisor_adc 0>;
@@ -222,19 +217,6 @@
 		label = "SCAP_PLUS";
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
-		#io-channel-cells = <0>;
-	};
-
-	/*
-	 * On boards with two or more banks, junction becomes junction-0, and
-	 * additional junctions are labeled junction-N.
-	 */
-	an_scap_junction: an-scap-junction {
-		compatible = "voltage-divider";
-		io-channels = <&supervisor_adc 5>;
-		label = "SCAP_JUNCTION";
-		output-ohms = <1>;  /* direct mV (<3.3V) after 12-bit scaling */
-		full-ohms = <1>;
 		#io-channel-cells = <0>;
 	};
 
@@ -504,19 +486,31 @@
 			#io-channel-cells = <1>;
 		};
 
+		wizard_irq: wizard_irq {
+			compatible = "technologic,wizard-irq";
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_wizirq>;
+
+			interrupt-parent = <&gpio4>;
+			interrupts = <29 IRQ_TYPE_LEVEL_HIGH>;
+
+			#interrupt-cells = <1>;
+			interrupt-controller;
+		};
+
 		supervisor_silo: supervisor_silo {
 			compatible = "technologic,tssilo-power-supply";
-			#io-channel-cells = <1>;
-
-                        /* SILO handles power_fail alone; will move to an i2c intc */
-		        interrupt-parent = <&gpio4>;
-		        interrupts = <29 IRQ_TYPE_EDGE_RISING>;
-                        power-fail-gpios = <&gpio4 29 GPIO_ACTIVE_HIGH>;
+			interrupt-parent = <&wizard_irq>;
+			interrupts = <0>;
 		};
 
 		supervisor_temp: supervisor_temp {
 			compatible = "technologic,supervisor-temp";
 			#io-channel-cells = <0>;
+		};
+
+		supervisor_reset: supervisor_reset {
+			compatible = "technologic,supervisor-reset";
 		};
 	};
 
@@ -527,7 +521,7 @@
 	};
 
 	dp_bridge: dp-bridge@68 {
-		compatible = "toshiba,tc358767"; 
+		compatible = "toshiba,tc358767";
 		reg = <0x68>;
 		reset-gpios = <&fpga_gpio1 27 GPIO_ACTIVE_HIGH>;
 
@@ -584,14 +578,11 @@
 	pinctrl-0 = <&pinctrl_lpi2c2>;
 	status = "okay";
 
-	/* i.MX93 Master */
-
 	pmic@25 {
 		compatible = "nxp,pca9451a";
 		reg = <0x25>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_pmic>;
-		/* Passed through the FPGA, PMIC_INT# to CCM_CLK03 */
 		interrupt-parent = <&gpio1>;
 		interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
 		nxp,i2c-lt-enable;
@@ -675,32 +666,32 @@
 	status = "okay";
 };
 
-&lpuart1 { /* serial@44380000: Console */
+&lpuart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
 	status = "okay";
 };
 
-&lpuart2 { /* serial@44390000: Primary RS-232 */
+&lpuart2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart2>;
 	status = "okay";
 };
 
-&lpuart3 { /* serial@42570000: Secondary RS-485 (or RS-232) */
+&lpuart3 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart3>;
 	linux,rs485-enabled-at-boot-time;
 	status = "okay";
 };
 
-&lpuart5 { /* serial@42590000: Airgain/Nimbelink/XBee */
+&lpuart5 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart5>;
 	status = "okay";
 };
 
-&lpuart6 { /* serial@425a0000: Silex Bluetooth */
+&lpuart6 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart6>;
 	uart-has-rtscts;
@@ -713,14 +704,14 @@
 	};
 };
 
-&lpuart7 { /* serial@42690000: Primary RS-485 */
+&lpuart7 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart7>;
 	linux,rs485-enabled-at-boot-time;
 	status = "okay";
 };
 
-&lpuart8 { /* serial@426a0000: Mikroe */
+&lpuart8 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart8>;
 	status = "okay";
@@ -806,7 +797,7 @@
 	status = "okay";
 };
 
-/* CPU GPIO2: 43810000.gpio (per i.MX93 RM (ch. 29/GPIO) */
+/* 43810000.gpio */
 &gpio2 {
 	gpio-line-names =
 		"GPIO_00",      "GPIO_01",      "GPIO_02", "GPIO_03", "GPIO_04",
@@ -816,13 +807,8 @@
 		"GPIO_20",      "GPIO_21";
 };
 
-/* CPU GPIO4: 43830000.gpio (per i.MX93 RM (ch. 29/GPIO) */
+/* 43830000.gpio */
 &gpio4 {
-        /*
-        */
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_wizard_irq>;
-
 	gpio-line-names =
 		"",          "",          "",         "",         "",
 		"",          "",          "",         "",         "",
@@ -894,25 +880,25 @@
 		fsl,pins = <
 			MX93_PAD_ENET1_MDC__GPIO4_IO00				0x31e
 			MX93_PAD_ENET1_MDIO__GPIO4_IO01				0x31e
-			MX93_PAD_ENET1_RD0__GPIO4_IO10                          0x31e
+			MX93_PAD_ENET1_RD0__GPIO4_IO10				0x31e
 			MX93_PAD_ENET1_RD1__GPIO4_IO11				0x31e
 			MX93_PAD_ENET1_RD2__GPIO4_IO12				0x31e
 			MX93_PAD_ENET1_RD3__GPIO4_IO13				0x31e
-			MX93_PAD_ENET1_RXC__GPIO4_IO09                          0x31e
+			MX93_PAD_ENET1_RXC__GPIO4_IO09				0x31e
 			MX93_PAD_ENET1_RX_CTL__GPIO4_IO08			0x31e
-			MX93_PAD_ENET1_TD0__GPIO4_IO05                          0x31e
-			MX93_PAD_ENET1_TD1__GPIO4_IO04                          0x31e
+			MX93_PAD_ENET1_TD0__GPIO4_IO05				0x31e
+			MX93_PAD_ENET1_TD1__GPIO4_IO04				0x31e
 			MX93_PAD_ENET1_TD2__GPIO4_IO03				0x31e
 			MX93_PAD_ENET1_TD3__GPIO4_IO02				0x31e
-			MX93_PAD_ENET1_TXC__GPIO4_IO07                          0x31e
-			MX93_PAD_ENET1_TX_CTL__GPIO4_IO06                       0x31e
+			MX93_PAD_ENET1_TXC__GPIO4_IO07				0x31e
+			MX93_PAD_ENET1_TX_CTL__GPIO4_IO06			0x31e
 		>;
 	};
 
 	/* CAN1 is taken from micfil/i2s audio */
 	pinctrl_flexcan1: flexcan1grp {
 		fsl,pins = <
-			MX93_PAD_PDM_CLK__CAN1_TX       	0x139e
+			MX93_PAD_PDM_CLK__CAN1_TX		0x139e
 			MX93_PAD_PDM_BIT_STREAM0__CAN1_RX	0x139e
 		>;
 	};
@@ -920,7 +906,7 @@
 	/* JTAG_CPU_TDI & TDO are unavailable when CAN2 is configured */
 	pinctrl_flexcan2: flexcan2grp {
 		fsl,pins = <
-			MX93_PAD_DAP_TDI__CAN2_TX       	0x139e
+			MX93_PAD_DAP_TDI__CAN2_TX		0x139e
 			MX93_PAD_DAP_TDO_TRACESWO__CAN2_RX	0x139e
 		>;
 	};
@@ -995,7 +981,6 @@
 		>;
 	};
 
-	/* uart1/LP0: Console via serial-USB */
 	pinctrl_uart1: uart1grp {
 		fsl,pins = <
 			MX93_PAD_UART1_RXD__LPUART1_RX			0x31e
@@ -1003,7 +988,6 @@
 		>;
 	};
 
-	/* uart2/LP1: RS-232 */
 	pinctrl_uart2: uart2grp {
 		fsl,pins = <
 			MX93_PAD_UART2_RXD__LPUART2_RX			0x31e
@@ -1011,18 +995,15 @@
 		>;
 	};
 
-	/* uart3/LP2: Secondary RS-485/232 */
 	pinctrl_uart3: uart3grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO15__LPUART3_RX			0x31e
 			MX93_PAD_GPIO_IO14__LPUART3_TX			0x31e
 			MX93_PAD_GPIO_IO17__LPUART3_RTS_B		0x31e
 			MX93_PAD_GPIO_IO16__LPUART3_CTS_B		0x31e
-		
 		>;
 	};
 
-	/* uart5/LP4: Nimbelink */
 	pinctrl_uart5: uart5grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO00__LPUART5_TX			0x31e
@@ -1030,7 +1011,6 @@
 		>;
 	};
 
-	/* uart6/LP5: Silex Bluetooth */
 	pinctrl_uart6: uart6grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO04__LPUART6_TX			0x31e
@@ -1040,7 +1020,6 @@
 		>;
 	};
 
-	/* uart7/LP6: Primary RS-485 */
 	pinctrl_uart7: uart7grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO08__LPUART7_TX			0x31e
@@ -1049,7 +1028,6 @@
 		>;
 	};
 
-	/* uart8/LP7: Mikroe */
 	pinctrl_uart8: uart8grp {
 		fsl,pins = <
 			MX93_PAD_GPIO_IO12__LPUART8_TX			0x31e
@@ -1153,18 +1131,6 @@
 		>;
 	};
 
-	pinctrl_usdhc2_sleep: usdhc2sleepgrp {
-		fsl,pins = <
-			MX93_PAD_SD2_CLK__GPIO3_IO01            0x51e
-			MX93_PAD_SD2_CMD__GPIO3_IO02		0x51e
-			MX93_PAD_SD2_DATA0__GPIO3_IO03		0x51e
-			MX93_PAD_SD2_DATA1__GPIO3_IO04		0x51e
-			MX93_PAD_SD2_DATA2__GPIO3_IO05		0x51e
-			MX93_PAD_SD2_DATA3__GPIO3_IO06		0x51e
-			MX93_PAD_SD2_VSELECT__GPIO3_IO19	0x51e
-		>;
-	};
-
 	/* need to config the SION for data and cmd pad, refer to ERR052021 */
 	pinctrl_usdhc3: usdhc3grp {
 		fsl,pins = <
@@ -1207,9 +1173,8 @@
 		>;
 	};
 
-	pinctrl_wizard_irq: wizard-irqgrp {
+	pinctrl_wizirq: wizard-irqgrp {
 		fsl,pins = <
-                	/* Pull down wizard_irq to avoid interrupts when Z */
 			MX93_PAD_CCM_CLKO4__GPIO4_IO29		0x4000019e
 		>;
 	};
