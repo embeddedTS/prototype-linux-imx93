@@ -14,9 +14,9 @@
 #include <linux/regmap.h>
 #include <linux/mfd/ts_supervisor.h>
 
-#define IRQ_STATUS	0x0
-#define IRQ_MASK_SET	0x2
-#define IRQ_MASK_CLR	0x4
+#define IRQ_STATUS	0
+#define IRQ_MASK_SET	1
+#define IRQ_MASK_CLR	2
 
 #define MAX_IRQS	16
 
@@ -118,6 +118,8 @@ static int irq_wizard_probe(struct platform_device *pdev)
 	data->parent_irq = platform_get_irq(pdev, 0);
 	if (data->parent_irq < 0)
 		return data->parent_irq;
+
+	wizard_write(data, IRQ_MASK_SET, 0xFFFF);
 
 	data->domain = irq_domain_add_linear(node, MAX_IRQS, &wizard_ic_ops, data);
 	if (!data->domain) {
