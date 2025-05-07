@@ -19,6 +19,7 @@
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 
+#define SILO_RESERVED0					(SUPER_SILO_BASE + 0)
 #define SILO_STATUS					(SUPER_SILO_BASE + 1)
 #define SILO_CONTROL					(SUPER_SILO_BASE + 2)
 #define SILO_PCT_CHARGED				(SUPER_SILO_BASE + 4)
@@ -47,7 +48,6 @@ struct tssilo_supercaps_data {
 	struct regmap *regmap;
 	struct power_supply *psy;
 	struct device *dev;
-	int irq;
 };
 
 static int get_pct_charged(struct tssilo_supercaps_data *data)
@@ -362,6 +362,8 @@ static int ts_silo_probe(struct platform_device *pdev)
 	struct tssilo_supercaps_data *data;
 	struct power_supply_config psy_cfg = {};
 	int ret;
+	int irq;
+	unsigned int version;
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
 	wizard->silo_pdev = pdev;
@@ -392,6 +394,12 @@ static int ts_silo_probe(struct platform_device *pdev)
 	if (ret)
 		return ret;
 
+	ret = regmap_read(data->regmap, SILO_RESERVED0, &version);
+	if (ret < 0)
+		return ret;
+	dev_info(dev, "TS-SILO version %d\n", version);
+	if (version < 2)
+		dev_warn(dev, "POWER_FAIL ignored without a Wizard interrupt controller.\n");
 	return 0;
 }
 
