@@ -204,17 +204,26 @@ static const struct attribute_group tssilo_supercaps_attr_group = {
 	.attrs = tssilo_supercaps_attrs,
 };
 
-static int tssilo_property_is_writeable(struct power_supply *psy,
-					enum power_supply_property psp)
+static int tssilo_property_is_writable(struct power_supply *psy,
+				       enum power_supply_property psp)
 {
-	return psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT ||
-		psp == POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN;
+	switch (psp) {
+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
+		return 1;
+	default:
+		break;
+	}
+	return 0;
 }
 
 static enum power_supply_property tssilo_supercaps_props[] = {
 	POWER_SUPPLY_PROP_ONLINE,
 	POWER_SUPPLY_PROP_STATUS,
 	POWER_SUPPLY_PROP_CAPACITY,
+	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN
@@ -230,6 +239,18 @@ static int tssilo_supercaps_get_property(struct power_supply *psy,
 	struct tssilo_supercaps_data *data = power_supply_get_drvdata(psy);
 
 	switch (psp) {
+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
+		ret = regmap_test_bits(data->regmap, SILO_CONTROL, SILO_CONTROL_CHRG_EN);
+		if (ret < 0)
+			return ret;
+		val->intval = (ret ? 100 : 0);
+		return 0;
+	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
+		val->intval = 100;
+		return 0;
+	case POWER_SUPPLY_PROP_PRESENT:
+		val->intval = 1;
+		return 0;
 	case POWER_SUPPLY_PROP_ONLINE:
 		ret = regmap_read(data->regmap, SILO_STATUS, &reg);
 		val->intval = !(reg & SILO_STATUS_PWR_FAIL);
@@ -291,6 +312,10 @@ static int tssilo_supercaps_set_property(struct power_supply *psy,
 		ret = regmap_write(data->regmap, SILO_REQUESTED_CHG_CURRENT_MA, val->intval);
 	} else if (psp == POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN)
 		ret = regmap_write(data->regmap, SILO_CRITICAL_PCT, val->intval);
+	else if (psp == POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT)
+		ret = regmap_update_bits(data->regmap, SILO_CONTROL,
+					 SILO_CONTROL_CHRG_EN,
+					 val->intval ? SILO_CONTROL_CHRG_EN : 0);
 	else
 		return -EINVAL;
 
@@ -307,7 +332,7 @@ static const struct power_supply_desc tssilo_supercaps_desc = {
 	.num_properties		= ARRAY_SIZE(tssilo_supercaps_props),
 	.get_property		= tssilo_supercaps_get_property,
 	.set_property		= tssilo_supercaps_set_property,
-	.property_is_writeable	= tssilo_property_is_writeable,
+	.property_is_writeable	= tssilo_property_is_writable,
 	.no_thermal		= true,
 };
 
