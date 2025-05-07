@@ -106,8 +106,8 @@ static ssize_t charge_enabled_store(struct device *dev,
 }
 
 static ssize_t startup_charge_current_ma_show(struct device *dev,
-						  struct device_attribute *attr,
-						  char *buf)
+					      struct device_attribute *attr,
+					      char *buf)
 {
 	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
 	int ret, val;
@@ -119,8 +119,8 @@ static ssize_t startup_charge_current_ma_show(struct device *dev,
 }
 
 static ssize_t startup_charge_current_ma_store(struct device *dev,
-						   struct device_attribute *attr,
-						   const char *buf, size_t count)
+					       struct device_attribute *attr,
+					       const char *buf, size_t count)
 {
 	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
 	unsigned int max;
@@ -147,8 +147,8 @@ static ssize_t startup_charge_current_ma_store(struct device *dev,
 }
 
 static ssize_t min_power_on_pct_show(struct device *dev,
-				   struct device_attribute *attr,
-				   char *buf)
+				     struct device_attribute *attr,
+				     char *buf)
 {
 	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
 	unsigned int val;
@@ -162,8 +162,8 @@ static ssize_t min_power_on_pct_show(struct device *dev,
 }
 
 static ssize_t min_power_on_pct_store(struct device *dev,
-				    struct device_attribute *attr,
-				    const char *buf, size_t count)
+				      struct device_attribute *attr,
+				      const char *buf, size_t count)
 {
 	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
 	unsigned int val;
@@ -208,7 +208,7 @@ static int tssilo_property_is_writeable(struct power_supply *psy,
 					enum power_supply_property psp)
 {
 	return psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT ||
-	       psp == POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN;
+		psp == POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN;
 }
 
 static enum power_supply_property tssilo_supercaps_props[] = {
