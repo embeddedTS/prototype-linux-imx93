@@ -383,12 +383,10 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	clock-frequency = <400000>;
-	pinctrl-names = "default", "sleep";
+	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpi2c4>;
-	pinctrl-1 = <&pinctrl_lpi2c4>;
 	status = "okay";
 
-	/* Wizard multi-function device (MFD) */
 	supervisor: supervisor@54 {
 		compatible = "technologic,supervisor";
 		reg = <0x54>;
@@ -415,7 +413,7 @@
 	num-cs = <1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpspi4>;
-	status = "disabled";
+	status = "okay";
 };
 
 &lpuart1 {

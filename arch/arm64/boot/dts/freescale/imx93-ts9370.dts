@@ -666,6 +666,13 @@
 	status = "okay";
 };
 
+&lpspi4 {
+	num-cs = <1>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_lpspi4>;
+	status = "okay";
+};
+
 &lpuart1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_uart1>;
@@ -873,6 +880,15 @@
 		fsl,pins = <
 			MX93_PAD_GPIO_IO02__LPI2C4_SDA			0x40000b9e
 			MX93_PAD_GPIO_IO03__LPI2C4_SCL			0x40000b9e
+		>;
+	};
+
+	pinctrl_lpspi4: spi4grp {
+		fsl,pins = <
+			MX93_PAD_GPIO_IO21__LPSPI4_SCK		0x3fe
+			MX93_PAD_GPIO_IO20__LPSPI4_SOUT		0x3fe
+			MX93_PAD_GPIO_IO19__LPSPI4_SIN		0x3fe
+			MX93_PAD_GPIO_IO18__LPSPI4_PCS0		0x3fe
 		>;
 	};
 
