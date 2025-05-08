@@ -371,9 +371,9 @@ static int ts_silo_probe(struct platform_device *pdev)
 	data->regmap = wizard->regmap;
 	platform_set_drvdata(pdev, data);
 
-	data->irq = platform_get_irq(pdev, 0);
-	if (data->irq < 0)
-		return data->irq;
+	irq = platform_get_irq(pdev, 0);
+	if (irq < 0)
+		return irq;
 
 	psy_cfg.drv_data = data;
 	data->psy = devm_power_supply_register(dev, &tssilo_supercaps_desc, &psy_cfg);
@@ -388,7 +388,7 @@ static int ts_silo_probe(struct platform_device *pdev)
 		return ret;
 	}
 
-	ret = devm_request_threaded_irq(dev, data->irq,
+	ret = devm_request_threaded_irq(dev, irq,
 					NULL, power_fail_irq_handler,
 					IRQF_ONESHOT, dev_name(dev), data);
 	if (ret)
