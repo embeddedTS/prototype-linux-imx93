@@ -14,10 +14,6 @@
 #include <linux/regmap.h>
 #include <linux/mfd/ts_supervisor.h>
 
-#define IRQ_STATUS	0
-#define IRQ_MASK_SET	1
-#define IRQ_MASK_CLR	2
-
 #define MAX_IRQS	16
 
 struct wizard_irq_data {
@@ -55,7 +51,7 @@ static irqreturn_t wizard_irq_handler(int irq, void *devid)
 		}
 
 		/* Ack processed IRQs */
-		wizard_write(data, IRQ_STATUS, status);
+		wizard_write(data, IRQ_ACK, status);
 	}
 
 	return IRQ_RETVAL(ret);
@@ -113,7 +109,7 @@ static int irq_wizard_probe(struct platform_device *pdev)
 
 	data->regmap = super->regmap;
 	data->dev = dev;
-	data->base = 0x200;
+	data->base = WIZARD_IRQCHIP_BASE;
 
 	data->parent_irq = platform_get_irq(pdev, 0);
 	if (data->parent_irq < 0)
