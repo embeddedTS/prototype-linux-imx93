@@ -27,6 +27,14 @@ struct ts_supervisor {
 #define SUPER_TEMPERATURE   160
 #define SUPER_CURRENT       161
 
+#define WIZARD_IRQCHIP_BASE  512
+#define WIZARD_SILO_IRQ_BASE 528
+
+#define IRQ_STATUS      0
+#define IRQ_ACK         1
+#define IRQ_MASK_SET    2
+#define IRQ_MASK_CLR    3
+
 enum gen_flags_t {
 	FLG_FORCE_USB_CON = BIT(4),
 	FLG_LED_DAT = BIT(3),
