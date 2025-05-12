@@ -63,48 +63,6 @@ static int get_pct_charged(struct tssilo_supercaps_data *data)
 	return val;
 }
 
-static ssize_t charge_enabled_show(struct device *dev,
-				   struct device_attribute *attr,
-				   char *buf)
-{
-	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
-	int val;
-
-	val = regmap_test_bits(data->regmap, SILO_CONTROL, SILO_CONTROL_CHRG_EN);
-	if (val < 0) {
-		dev_err(dev, "%s failed from regmap_read (rc=%d)\n", __func__, val);
-		return sprintf(buf, "ERROR (rc=%d)\n", val);
-	}
-
-	return sprintf(buf, "%d\n", !!val);
-}
-
-static ssize_t charge_enabled_store(struct device *dev,
-				    struct device_attribute *attr,
-				    const char *buf, size_t count)
-{
-	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
-	int ret, val;
-
-	ret = kstrtoint(buf, 10, &val);
-	if (ret)
-		return ret;
-
-	if ((val != 0) && (val != 1))
-		return -EINVAL;
-
-	ret = regmap_update_bits(data->regmap, SILO_CONTROL,
-				 SILO_CONTROL_CHRG_EN, val ? SILO_CONTROL_CHRG_EN : 0);
-	if (ret) {
-		dev_err(dev, "%s: regmap_write returned %d\n", __func__, ret);
-		return ret;
-	}
-
-	power_supply_changed(data->psy);
-
-	return count;
-}
-
 static ssize_t startup_charge_current_ma_show(struct device *dev,
 					      struct device_attribute *attr,
 					      char *buf)
@@ -185,7 +143,6 @@ static ssize_t min_power_on_pct_store(struct device *dev,
 	return count;
 }
 
-static DEVICE_ATTR_RW(charge_enabled);
 static DEVICE_ATTR_RW(startup_charge_current_ma);
 static DEVICE_ATTR_RW(min_power_on_pct);
 
@@ -194,7 +151,6 @@ static DEVICE_ATTR_RW(min_power_on_pct);
  * power supply properties.
  */
 static struct attribute *tssilo_supercaps_attrs[] = {
-	&dev_attr_charge_enabled.attr,
 	&dev_attr_startup_charge_current_ma.attr,
 	&dev_attr_min_power_on_pct.attr,
 	NULL,
@@ -208,7 +164,7 @@ static int tssilo_property_is_writable(struct power_supply *psy,
 				       enum power_supply_property psp)
 {
 	switch (psp) {
-	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
 		return 1;
@@ -222,8 +178,7 @@ static enum power_supply_property tssilo_supercaps_props[] = {
 	POWER_SUPPLY_PROP_ONLINE,
 	POWER_SUPPLY_PROP_STATUS,
 	POWER_SUPPLY_PROP_CAPACITY,
-	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
-	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
+	POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR,
 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN
@@ -239,17 +194,11 @@ static int tssilo_supercaps_get_property(struct power_supply *psy,
 	struct tssilo_supercaps_data *data = power_supply_get_drvdata(psy);
 
 	switch (psp) {
-	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
+	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
 		ret = regmap_test_bits(data->regmap, SILO_CONTROL, SILO_CONTROL_CHRG_EN);
 		if (ret < 0)
 			return ret;
-		val->intval = (ret ? 100 : 0);
-		return 0;
-	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
-		val->intval = 100;
-		return 0;
-	case POWER_SUPPLY_PROP_PRESENT:
-		val->intval = 1;
+		val->intval = (ret ? POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO : POWER_SUPPLY_CHARGE_BEHAVIOUR_INHIBIT_CHARGE);
 		return 0;
 	case POWER_SUPPLY_PROP_ONLINE:
 		ret = regmap_read(data->regmap, SILO_STATUS, &reg);
@@ -312,11 +261,11 @@ static int tssilo_supercaps_set_property(struct power_supply *psy,
 		ret = regmap_write(data->regmap, SILO_REQUESTED_CHG_CURRENT_MA, val->intval);
 	} else if (psp == POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN)
 		ret = regmap_write(data->regmap, SILO_CRITICAL_PCT, val->intval);
-	else if (psp == POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT)
+	else if (psp == POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR) {
+		value = ((val->intval == POWER_SUPPLY_CHARGE_BEHAVIOUR_AUTO) ? SILO_CONTROL_CHRG_EN : 0);
 		ret = regmap_update_bits(data->regmap, SILO_CONTROL,
-					 SILO_CONTROL_CHRG_EN,
-					 val->intval ? SILO_CONTROL_CHRG_EN : 0);
-	else
+					 SILO_CONTROL_CHRG_EN, value);
+	} else
 		return -EINVAL;
 
 	if (!ret)
