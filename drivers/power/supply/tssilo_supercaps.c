@@ -22,13 +22,19 @@
 #define SILO_RESERVED0					(SUPER_SILO_BASE + 0)
 #define SILO_STATUS					(SUPER_SILO_BASE + 1)
 #define SILO_CONTROL					(SUPER_SILO_BASE + 2)
-#define SILO_PCT_CHARGED				(SUPER_SILO_BASE + 4)
-#define SILO_STARTUP_REQUESTED_CHG_CURRENT_MA		(SUPER_SILO_BASE + 5)
-#define SILO_REQUESTED_CHG_CURRENT_MA			(SUPER_SILO_BASE + 6)
-#define SILO_MIN_PWR_ON_PCT				(SUPER_SILO_BASE + 7)
-#define SILO_CRITICAL_PCT				(SUPER_SILO_BASE + 8)
-#define SILO_IRQ_STATUS					(SUPER_SILO_BASE + 9)
-#define SILO_MAX_SUPPORTED_CHRG_CURRENT_MA		(SUPER_SILO_BASE + 10)
+
+#define SILO_REQUESTED_CHG_CURRENT_MA			(SUPER_SILO_BASE + 4)
+#define SILO_MAX_SUPPORTED_CHRG_CURRENT_MA		(SUPER_SILO_BASE + 5)
+
+#define SILO_PCT_CHARGED				(SUPER_SILO_BASE + 8)
+#define SILO_CRITICAL_PCT				(SUPER_SILO_BASE + 9)
+
+#define SILO_STARTUP_REQUESTED_CHG_CURRENT_MA		(SUPER_SILO_BASE + 12)
+#define SILO_MIN_PWR_ON_PCT				(SUPER_SILO_BASE + 13)
+
+#define SILO_IRQS_BASE					(WIZARD_SILO_IRQ_BASE)
+#define SILO_IRQS_PENDING				(SILO_IRQS_BASE + IRQ_STATUS)
+#define SILO_ACK_IRQS					(SILO_IRQS_BASE + IRQ_ACK)
 
 #define SILO_STATUS_CHARGING		BIT(0)
 #define SILO_STATUS_PWR_FAIL		BIT(15)
@@ -285,17 +291,22 @@ static const struct power_supply_desc tssilo_supercaps_desc = {
 	.no_thermal		= true,
 };
 
-static irqreturn_t power_fail_irq_handler(int irq, void *dev_id)
+static irqreturn_t silo_irq_handler(int irq, void *dev_id)
 {
 	struct tssilo_supercaps_data *data = dev_id;
 	unsigned int val;
 	int ret;
 
-	ret = regmap_read(data->regmap, SILO_IRQ_STATUS, &val);
+	ret = regmap_read(data->regmap, SILO_IRQS_PENDING, &val);
 	if (ret)
 		return IRQ_NONE;
-	/* Ack the IRQ */
-	ret = regmap_write(data->regmap, SILO_IRQ_STATUS, val);
+	/*
+	 * We do not store state, so we have to ack everything and
+	 * then let the Power Supply framework do its 20-questions
+	 * thing with the Wizard/SILO to find out, for instance, that
+	 * we're now below below the CAPACITY_ALERT_MIN.
+	 */
+	ret = regmap_write(data->regmap, SILO_ACK_IRQS, val);
 	if (ret)
 		return IRQ_NONE;
 
@@ -338,7 +349,7 @@ static int ts_silo_probe(struct platform_device *pdev)
 	}
 
 	ret = devm_request_threaded_irq(dev, irq,
-					NULL, power_fail_irq_handler,
+					NULL, silo_irq_handler,
 					IRQF_ONESHOT, dev_name(dev), data);
 	if (ret)
 		return ret;
