@@ -481,12 +481,12 @@
 		compatible = "technologic,supervisor";
 		reg = <0x54>;
 
-		supervisor_adc: supervisor_adc {
+		supervisor_adc: adc {
 			compatible = "technologic,supervisor-adc";
 			#io-channel-cells = <1>;
 		};
 
-		wizard_irq: wizard_irq {
+		wizard_irq: irq {
 			compatible = "technologic,wizard-irq";
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_wizirq>;
@@ -498,18 +498,18 @@
 			interrupt-controller;
 		};
 
-		supervisor_silo: supervisor_silo {
-			compatible = "technologic,tssilo-power-supply";
+		supervisor_silo: ups {
+			compatible = "technologic,tssilo";
 			interrupt-parent = <&wizard_irq>;
 			interrupts = <0>;
 		};
 
-		supervisor_temp: supervisor_temp {
+		supervisor_temp: temp {
 			compatible = "technologic,supervisor-temp";
 			#io-channel-cells = <0>;
 		};
 
-		supervisor_reset: supervisor_reset {
+		supervisor_reset: reset {
 			compatible = "technologic,supervisor-reset";
 		};
 	};
