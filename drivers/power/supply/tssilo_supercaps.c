@@ -49,14 +49,14 @@
 #define SILO_CONTROL_CHRG_EN		BIT(0)
 #define SILO_CONTROL_PWRUP		BIT(1)
 
-struct tssilo_supercaps_data {
+struct tssilo_data {
 	struct ts_supervisor *super;
 	struct regmap *regmap;
 	struct power_supply *psy;
 	struct device *dev;
 };
 
-static int get_pct_charged(struct tssilo_supercaps_data *data)
+static int get_pct_charged(struct tssilo_data *data)
 {
 	int ret;
 	unsigned int val;
@@ -73,7 +73,7 @@ static ssize_t startup_charge_current_ma_show(struct device *dev,
 					      struct device_attribute *attr,
 					      char *buf)
 {
-	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
+	struct tssilo_data *data = dev_get_drvdata(dev);
 	int ret, val;
 
 	ret = regmap_read(data->regmap, SILO_STARTUP_REQUESTED_CHG_CURRENT_MA, &val);
@@ -86,7 +86,7 @@ static ssize_t startup_charge_current_ma_store(struct device *dev,
 					       struct device_attribute *attr,
 					       const char *buf, size_t count)
 {
-	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
+	struct tssilo_data *data = dev_get_drvdata(dev);
 	unsigned int max;
 	int ret;
 	int val;
@@ -114,7 +114,7 @@ static ssize_t min_power_on_pct_show(struct device *dev,
 				     struct device_attribute *attr,
 				     char *buf)
 {
-	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
+	struct tssilo_data *data = dev_get_drvdata(dev);
 	unsigned int val;
 	int ret;
 
@@ -129,7 +129,7 @@ static ssize_t min_power_on_pct_store(struct device *dev,
 				      struct device_attribute *attr,
 				      const char *buf, size_t count)
 {
-	struct tssilo_supercaps_data *data = dev_get_drvdata(dev);
+	struct tssilo_data *data = dev_get_drvdata(dev);
 	unsigned int val;
 	int ret;
 
@@ -156,14 +156,14 @@ static DEVICE_ATTR_RW(min_power_on_pct);
  * Currently these are our properties that do not map to any standard
  * power supply properties.
  */
-static struct attribute *tssilo_supercaps_attrs[] = {
+static struct attribute *tssilo_attrs[] = {
 	&dev_attr_startup_charge_current_ma.attr,
 	&dev_attr_min_power_on_pct.attr,
 	NULL,
 };
 
-static const struct attribute_group tssilo_supercaps_attr_group = {
-	.attrs = tssilo_supercaps_attrs,
+static const struct attribute_group tssilo_attr_group = {
+	.attrs = tssilo_attrs,
 };
 
 static int tssilo_property_is_writable(struct power_supply *psy,
@@ -180,7 +180,7 @@ static int tssilo_property_is_writable(struct power_supply *psy,
 	return 0;
 }
 
-static enum power_supply_property tssilo_supercaps_props[] = {
+static enum power_supply_property tssilo_props[] = {
 	POWER_SUPPLY_PROP_ONLINE,
 	POWER_SUPPLY_PROP_STATUS,
 	POWER_SUPPLY_PROP_CAPACITY,
@@ -190,14 +190,14 @@ static enum power_supply_property tssilo_supercaps_props[] = {
 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN
 };
 
-static int tssilo_supercaps_get_property(struct power_supply *psy,
+static int tssilo_get_property(struct power_supply *psy,
 					 enum power_supply_property psp,
 					 union power_supply_propval *val)
 {
 	unsigned int reg;
 	int ret;
 
-	struct tssilo_supercaps_data *data = power_supply_get_drvdata(psy);
+	struct tssilo_data *data = power_supply_get_drvdata(psy);
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_CHARGE_BEHAVIOUR:
@@ -250,11 +250,11 @@ static int tssilo_supercaps_get_property(struct power_supply *psy,
 	return -ENODATA;
 }
 
-static int tssilo_supercaps_set_property(struct power_supply *psy,
+static int tssilo_set_property(struct power_supply *psy,
 					 enum power_supply_property psp,
 					 const union power_supply_propval *val)
 {
-	struct tssilo_supercaps_data *data = power_supply_get_drvdata(psy);
+	struct tssilo_data *data = power_supply_get_drvdata(psy);
 	unsigned int value;
 	int ret;
 
@@ -280,20 +280,20 @@ static int tssilo_supercaps_set_property(struct power_supply *psy,
 	return ret;
 }
 
-static const struct power_supply_desc tssilo_supercaps_desc = {
+static const struct power_supply_desc tssilo_desc = {
 	.name			= "tssilo_supercaps",
 	.type			= POWER_SUPPLY_TYPE_UPS,
-	.properties		= tssilo_supercaps_props,
-	.num_properties		= ARRAY_SIZE(tssilo_supercaps_props),
-	.get_property		= tssilo_supercaps_get_property,
-	.set_property		= tssilo_supercaps_set_property,
+	.properties		= tssilo_props,
+	.num_properties		= ARRAY_SIZE(tssilo_props),
+	.get_property		= tssilo_get_property,
+	.set_property		= tssilo_set_property,
 	.property_is_writeable	= tssilo_property_is_writable,
 	.no_thermal		= true,
 };
 
 static irqreturn_t silo_irq_handler(int irq, void *dev_id)
 {
-	struct tssilo_supercaps_data *data = dev_id;
+	struct tssilo_data *data = dev_id;
 	unsigned int val;
 	int ret;
 
@@ -319,7 +319,7 @@ static int ts_silo_probe(struct platform_device *pdev)
 {
 	struct ts_supervisor *wizard = dev_get_drvdata(pdev->dev.parent);
 	struct device *dev = &pdev->dev;
-	struct tssilo_supercaps_data *data;
+	struct tssilo_data *data;
 	struct power_supply_config psy_cfg = {};
 	int ret;
 	int irq;
@@ -336,13 +336,13 @@ static int ts_silo_probe(struct platform_device *pdev)
 		return irq;
 
 	psy_cfg.drv_data = data;
-	data->psy = devm_power_supply_register(dev, &tssilo_supercaps_desc, &psy_cfg);
+	data->psy = devm_power_supply_register(dev, &tssilo_desc, &psy_cfg);
 	if (IS_ERR(data->psy)) {
 		dev_err(dev, "devm_power_supply_register failed (rc=%pe)", data->psy);
 		return PTR_ERR(data->psy);
 	}
 
-	ret = sysfs_create_group(&dev->kobj, &tssilo_supercaps_attr_group);
+	ret = sysfs_create_group(&dev->kobj, &tssilo_attr_group);
 	if (ret) {
 		dev_err(dev, "sysfs_create_group failed (rc=%d)\n", ret);
 		return ret;
@@ -365,26 +365,26 @@ static int ts_silo_probe(struct platform_device *pdev)
 
 static int ts_silo_remove(struct platform_device *pdev)
 {
-	sysfs_remove_group(&pdev->dev.kobj, &tssilo_supercaps_attr_group);
+	sysfs_remove_group(&pdev->dev.kobj, &tssilo_attr_group);
 	return 0;
 }
 
-static const struct of_device_id tssilo_supercaps_of_match[] = {
-	{ .compatible = "technologic,tssilo-power-supply", },
+static const struct of_device_id tssilo_of_match[] = {
+	{ .compatible = "technologic,tssilo", },
 	{}
 };
-MODULE_DEVICE_TABLE(of, tssilo_supercaps_of_match);
+MODULE_DEVICE_TABLE(of, tssilo_of_match);
 
-static struct platform_driver tssilo_supercaps_driver = {
+static struct platform_driver tssilo_driver = {
 	.driver = {
-		.name = "tssilo_supercaps",
-		.of_match_table = tssilo_supercaps_of_match,
+		.name = "tssilo",
+		.of_match_table = tssilo_of_match,
 	},
 	.probe = ts_silo_probe,
 	.remove = ts_silo_remove,
 };
 
-module_platform_driver(tssilo_supercaps_driver);
+module_platform_driver(tssilo_driver);
 
 MODULE_DESCRIPTION("embeddedTS SILO supercaps driver");
 MODULE_AUTHOR("Lionel D. Hummel <lionel@embeddedTS.com>");
