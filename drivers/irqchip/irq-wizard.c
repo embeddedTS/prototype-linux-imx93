@@ -39,10 +39,10 @@ static irqreturn_t wizard_irq_handler(int irq, void *devid)
 	struct wizard_irq_data *data = devid;
 	unsigned long status;
 	int i;
-	bool ret;
+	int ret;
 
 	ret = wizard_read(data, IRQ_STATUS, (u32 *)&status);
-	if (ret) {
+	if (!ret) {
 		ret = 0;
 
 		for_each_set_bit(i, &status, MAX_IRQS) {
