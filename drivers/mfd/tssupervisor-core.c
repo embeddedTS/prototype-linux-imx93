@@ -41,8 +41,8 @@ static struct mfd_cell ts9370_devs[] = {
 		.id = -1,
 	},
 	{
-		.name = "tssupervisor-silo",
-		.of_compatible = "technologic,tssilo-power-supply",
+		.name = "silo",
+		.of_compatible = "technologic,silo",
 		.id = -1,
 	},
 	{
