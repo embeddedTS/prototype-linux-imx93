@@ -663,7 +663,7 @@
 		};
 
 		supervisor_silo: ups {
-			compatible = "technologic,tssilo";
+			compatible = "technologic,silo";
 			interrupt-parent = <&wizard_irq>;
 			interrupts = <0>;
 		};
