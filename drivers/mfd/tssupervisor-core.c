@@ -33,7 +33,6 @@ static struct mfd_cell ts7250v3_devs[] = {
 	}
 };
 
-
 static struct mfd_cell ts9370_devs[] = {
 	{
 		.name = "wizard-irq",
@@ -100,7 +99,6 @@ const struct regmap_config ts_supervisor_i2c_regmap = {
 	.rd_table = &ts_supervisor_read_register_set,
 	.volatile_table = &ts_supervisor_read_register_set,
 
-	.disable_locking = true,
 	.cache_type = REGCACHE_NONE,
 };
 EXPORT_SYMBOL_GPL(ts_supervisor_i2c_regmap);
