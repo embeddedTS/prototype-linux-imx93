@@ -61,44 +61,12 @@ static struct mfd_cell ts9370_devs[] = {
 	},
 };
 
-static const struct regmap_range ts_supervisor_read_regs[] = {
-	regmap_reg_range(0, 3), /* model/version/advertisements */
-	regmap_reg_range(16, 16), /* flags */
-	regmap_reg_range(24, 24), /* inputs */
-	regmap_reg_range(32, 32), /* reboot_reason */
-	regmap_reg_range(64, 128), /* SILO */
-	regmap_reg_range(128, 160), /* ADCs+temp */
-	regmap_reg_range(512, 784), /* IRQ controller registers */
-};
-
-static const struct regmap_range ts_supervisor_write_regs[] = {
-	regmap_reg_range(8, 8), /* cmds */
-	regmap_reg_range(16, 16), /* flags */
-	regmap_reg_range(64, 128), /* SILO */
-	regmap_reg_range(512, 784), /* IRQ controller registers */
-};
-
-const struct regmap_access_table ts_supervisor_read_register_set = {
-	.yes_ranges = ts_supervisor_read_regs,
-	.n_yes_ranges = ARRAY_SIZE(ts_supervisor_read_regs),
-};
-
-const struct regmap_access_table ts_supervisor_write_register_set = {
-	.yes_ranges = ts_supervisor_write_regs,
-	.n_yes_ranges = ARRAY_SIZE(ts_supervisor_write_regs),
-};
-
 const struct regmap_config ts_supervisor_i2c_regmap = {
 	.reg_bits = 16,
 	.val_bits = 16,
 	.can_multi_write = true,
 	.reg_format_endian = REGMAP_ENDIAN_LITTLE,
 	.val_format_endian = REGMAP_ENDIAN_LITTLE,
-
-	.wr_table = &ts_supervisor_write_register_set,
-	.rd_table = &ts_supervisor_read_register_set,
-	.volatile_table = &ts_supervisor_read_register_set,
-
 	.cache_type = REGCACHE_NONE,
 };
 EXPORT_SYMBOL_GPL(ts_supervisor_i2c_regmap);
