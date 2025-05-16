@@ -61,13 +61,13 @@ static int wizard_irq_probe(struct platform_device *pdev)
 		return parent_irq;
 
 	return devm_regmap_add_irq_chip_fwnode(dev,
-						 dev_fwnode(dev),
-						 super->regmap,
-						 parent_irq,
-						 IRQF_ONESHOT,
-						 0,
-						 &wizard_regmap_ic,
-						 &ricd);
+					       dev_fwnode(dev),
+					       super->regmap,
+					       parent_irq,
+					       0,
+					       0,
+					       &wizard_regmap_ic,
+					       &ricd);
 }
 
 static const struct of_device_id wizard_of_match[] = {
