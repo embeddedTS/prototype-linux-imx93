@@ -69,12 +69,14 @@ static const struct regmap_range ts_supervisor_read_regs[] = {
 	regmap_reg_range(32, 32), /* reboot_reason */
 	regmap_reg_range(64, 128), /* SILO */
 	regmap_reg_range(128, 160), /* ADCs+temp */
+	regmap_reg_range(512, 784), /* IRQ controller registers */
 };
 
 static const struct regmap_range ts_supervisor_write_regs[] = {
 	regmap_reg_range(8, 8), /* cmds */
 	regmap_reg_range(16, 16), /* flags */
 	regmap_reg_range(64, 128), /* SILO */
+	regmap_reg_range(512, 784), /* IRQ controller registers */
 };
 
 const struct regmap_access_table ts_supervisor_read_register_set = {
