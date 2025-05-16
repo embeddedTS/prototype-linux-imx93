@@ -36,6 +36,11 @@ static struct mfd_cell ts7250v3_devs[] = {
 
 static struct mfd_cell ts9370_devs[] = {
 	{
+		.name = "wizard-irq",
+		.of_compatible = "technologic,wizard-irq",
+		.id = -1,
+	},
+	{
 		.name = "tssupervisor-reset",
 		.of_compatible = "technologic,supervisor-reset",
 		.id = -1,
@@ -55,11 +60,6 @@ static struct mfd_cell ts9370_devs[] = {
 		.of_compatible = "technologic,supervisor-adc",
 		.id = -1,
 	},
-	{
-		.name = "wizard-irq",
-		.of_compatible = "technologic,wizard-irq",
-		.id = -1,
-	}
 };
 
 static const struct regmap_range ts_supervisor_read_regs[] = {
