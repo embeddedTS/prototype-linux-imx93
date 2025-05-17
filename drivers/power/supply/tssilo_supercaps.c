@@ -50,10 +50,8 @@
 #define SILO_CONTROL_PWRUP		BIT(1)
 
 struct silo_data {
-	struct ts_supervisor *super;
 	struct regmap *regmap;
 	struct power_supply *psy;
-	struct device *dev;
 };
 
 static int get_pct_charged(struct silo_data *data)
@@ -63,7 +61,7 @@ static int get_pct_charged(struct silo_data *data)
 
 	ret = regmap_read(data->regmap, SILO_PCT_CHARGED, &val);
 	if (ret) {
-		dev_err(data->dev, "%s failed from regmap_read (rc=%d)\n", __func__, ret);
+		dev_err(&data->psy->dev, "%s failed from regmap_read (rc=%d)\n", __func__, ret);
 		return ret;
 	}
 	return val;
@@ -326,7 +324,6 @@ static int ts_silo_probe(struct platform_device *pdev)
 	unsigned int version;
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-	data->dev = dev;
 	data->regmap = wizard->regmap;
 	platform_set_drvdata(pdev, data);
 
