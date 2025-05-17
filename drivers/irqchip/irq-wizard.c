@@ -13,6 +13,11 @@
 
 #define MAX_IRQS	16
 
+#define IRQ_STATUS      0
+#define IRQ_ACK         1
+#define IRQ_MASK_SET    2
+#define IRQ_MASK_CLR    3
+
 static const struct regmap_irq wizard_irqs[MAX_IRQS] = {
 	REGMAP_IRQ_REG(0, 0, BIT(0)),
 	REGMAP_IRQ_REG(1, 0, BIT(1)),
