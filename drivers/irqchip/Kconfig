@@ -298,7 +298,7 @@ config TS9370_IRQ
 config WIZARD_IRQ
 	tristate "embeddedTS Wizard IRQ controller"
 	select IRQ_DOMAIN
-	depends on MFD_TS_SUPERVISOR
+	depends on MFD_TS_WIZARD
 	help
 	  Add support for interrupts under the embeddedTS Wizard management microcontroller
 

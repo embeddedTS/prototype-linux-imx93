@@ -177,7 +177,7 @@
 
 	an_vin: an-vin {
 		compatible = "voltage-divider";
-		io-channels = <&supervisor_adc 0>;
+		io-channels = <&wizard_adc 0>;
 		label = "VIN";
 		output-ohms = <4990>; /* R2: 4.9k */
 		full-ohms = <79990>;  /* R1 (75k) + R2 (4.99k) */
@@ -186,7 +186,7 @@
 
 	an_5p2va: an-5p2va {
 		compatible = "voltage-divider";
-		io-channels = <&supervisor_adc 1>;
+		io-channels = <&wizard_adc 1>;
 		label = "5.2V_A";
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
@@ -195,7 +195,7 @@
 
 	an_reg_5v: an-reg-5v {
 		compatible = "voltage-divider";
-		io-channels = <&supervisor_adc 2>;
+		io-channels = <&wizard_adc 2>;
 		label = "REG_5V";
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
@@ -204,7 +204,7 @@
 
 	an_vchrg: an-vchrg {
 		compatible = "voltage-divider";
-		io-channels = <&supervisor_adc 3>;
+		io-channels = <&wizard_adc 3>;
 		label = "VCHRG";
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
@@ -213,7 +213,7 @@
 
 	an_scap_plus: an-scap-plus {
 		compatible = "voltage-divider";
-		io-channels = <&supervisor_adc 4>;
+		io-channels = <&wizard_adc 4>;
 		label = "SCAP_PLUS";
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
@@ -477,12 +477,12 @@
 		interrupts = <0 IRQ_TYPE_EDGE_RISING>;
 	};
 
-	supervisor: supervisor@54 {
-		compatible = "technologic,supervisor";
+	wizard: wizard@54 {
+		compatible = "technologic,wizard";
 		reg = <0x54>;
 
-		supervisor_adc: adc {
-			compatible = "technologic,supervisor-adc";
+		wizard_adc: adc {
+			compatible = "technologic,wizard-adc";
 			#io-channel-cells = <1>;
 		};
 
@@ -498,24 +498,24 @@
 			interrupt-controller;
 		};
 
-		supervisor_silo: ups {
-			compatible = "technologic,silo";
+		wizard_silo: ups {
+			compatible = "technologic,wizard-silo";
 			interrupt-parent = <&wizard_irq>;
 			interrupts = <0>;
 		};
 
-		supervisor_temp: temp {
-			compatible = "technologic,supervisor-temp";
+		wizard_temp: temp {
+			compatible = "technologic,wizard-temp";
 			#io-channel-cells = <0>;
 		};
 
-		supervisor_reset: reset {
-			compatible = "technologic,supervisor-reset";
+		wizard_reset: reset {
+			compatible = "technologic,wizard-reset";
 		};
 	};
 
-	supervisor_rtc: rtc@60 {
-		compatible = "technologic,supervisor-rtc";
+	wizard_rtc: rtc@60 {
+		compatible = "technologic,wizard-rtc";
 		reg = <0x60>;
 		wakeup-source;
 	};

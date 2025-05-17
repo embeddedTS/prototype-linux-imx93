@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * I2C temperature driver for the Wizard supervisory microcontroller.
+ * I2C temperature driver for the Wizard wizardvisory microcontroller.
  * Copyright (C) 2021-2022, 2024 Technologic Systems, Inc. dba embeddedTS
  *
  * Temperature is read from the RA4M2's on-chip temperature ADC, whose
@@ -16,10 +16,10 @@
 #include <linux/io.h>
 #include <linux/regmap.h>
 #include <linux/iio/iio.h>
-#include <linux/mfd/ts_supervisor.h>
+#include <linux/mfd/ts_wizard.h>
 
 struct ts_temp_adc {
-	struct ts_supervisor *super;
+	struct ts_wizard *wizard;
 };
 
 static const struct iio_chan_spec ts_temp_channel =
@@ -36,7 +36,7 @@ static int ts_temp_iio_read_raw(struct iio_dev *iio_dev,
 	int32_t data;
 	int ret;
 
-	ret = regmap_read(adc->super->regmap, SUPER_TEMPERATURE, &data);
+	ret = regmap_read(adc->wizard->regmap, WIZARD_TEMPERATURE, &data);
 	if (ret < 0)
 		return ret;
 
@@ -54,9 +54,9 @@ static const struct iio_info ts_adc_info = {
 	.read_raw = &ts_temp_iio_read_raw,
 };
 
-static int ts_supervisor_temp_probe(struct platform_device *pdev)
+static int ts_wizard_temp_probe(struct platform_device *pdev)
 {
-	struct ts_supervisor *super = dev_get_drvdata(pdev->dev.parent);
+	struct ts_wizard *wizard = dev_get_drvdata(pdev->dev.parent);
 	struct ts_temp_adc *adc;
 	struct device *dev = &pdev->dev;
 	struct iio_dev *indio_dev;
@@ -65,7 +65,7 @@ static int ts_supervisor_temp_probe(struct platform_device *pdev)
 	if (indio_dev == NULL)
 		return -ENOMEM;
 	adc = iio_priv(indio_dev);
-	adc->super = super;
+	adc->wizard = wizard;
 
 	/* ADC Channels + 1 temperature sensor */
 	indio_dev->num_channels = 1;
@@ -81,12 +81,12 @@ static int ts_supervisor_temp_probe(struct platform_device *pdev)
 
 static struct platform_driver tsadc_driver = {
 	.driver = {
-		.name   = "tssupervisor-temp",
+		.name   = "tswizard-temp",
 	},
-	.probe	= ts_supervisor_temp_probe,
+	.probe	= ts_wizard_temp_probe,
 };
 module_platform_driver(tsadc_driver);
 
-MODULE_DESCRIPTION("embeddedTS supervisor temperature sensor");
+MODULE_DESCRIPTION("embeddedTS wizard temperature sensor");
 MODULE_AUTHOR("Mark Featherston <mark@embeddedts.com>");
 MODULE_LICENSE("GPL");

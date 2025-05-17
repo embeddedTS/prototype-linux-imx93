@@ -7,7 +7,7 @@
 #include <linux/regmap.h>
 #include <linux/mfd/core.h>
 #include <linux/of_device.h>
-#include <linux/mfd/ts_supervisor.h>
+#include <linux/mfd/ts_wizard.h>
 
 #define MODEL_TS_7250_V3 0x7250
 #define MODEL_TS_9370    0x9370
@@ -16,18 +16,18 @@
 
 static struct mfd_cell ts7250v3_devs[] = {
 	{
-		.name = "tssupervisor-reset",
-		.of_compatible = "technologic,supervisor-reset",
+		.name = "tswizard-reset",
+		.of_compatible = "technologic,wizard-reset",
 		.id = -1,
 	},
 	{
-		.name = "tssupervisor-temp",
-		.of_compatible = "technologic,supervisor-temp",
+		.name = "tswizard-temp",
+		.of_compatible = "technologic,wizard-temp",
 		.id = -1,
 	},
 	{
-		.name = "tssupervisor-adc",
-		.of_compatible = "technologic,supervisor-adc",
+		.name = "tswizard-adc",
+		.of_compatible = "technologic,wizard-adc",
 		.id = -1,
 	}
 };
@@ -39,28 +39,28 @@ static struct mfd_cell ts9370_devs[] = {
 		.id = -1,
 	},
 	{
-		.name = "tssupervisor-reset",
-		.of_compatible = "technologic,supervisor-reset",
+		.name = "tswizard-reset",
+		.of_compatible = "technologic,wizard-reset",
 		.id = -1,
 	},
 	{
-		.name = "silo",
-		.of_compatible = "technologic,silo",
+		.name = "wizard-silo",
+		.of_compatible = "technologic,wizard-silo",
 		.id = -1,
 	},
 	{
-		.name = "tssupervisor-temp",
-		.of_compatible = "technologic,supervisor-temp",
+		.name = "tswizard-temp",
+		.of_compatible = "technologic,wizard-temp",
 		.id = -1,
 	},
 	{
-		.name = "tssupervisor-adc",
-		.of_compatible = "technologic,supervisor-adc",
+		.name = "tswizard-adc",
+		.of_compatible = "technologic,wizard-adc",
 		.id = -1,
 	},
 };
 
-const struct regmap_config ts_supervisor_i2c_regmap = {
+const struct regmap_config ts_wizard_i2c_regmap = {
 	.reg_bits = 16,
 	.val_bits = 16,
 	.can_multi_write = true,
@@ -68,16 +68,16 @@ const struct regmap_config ts_supervisor_i2c_regmap = {
 	.val_format_endian = REGMAP_ENDIAN_LITTLE,
 	.cache_type = REGCACHE_NONE,
 };
-EXPORT_SYMBOL_GPL(ts_supervisor_i2c_regmap);
+EXPORT_SYMBOL_GPL(ts_wizard_i2c_regmap);
 
 static ssize_t vbus_present_show(struct device *dev,
 				 struct device_attribute *attr, char *buf)
 {
-	struct ts_supervisor *super = dev_get_drvdata(dev);
+	struct ts_wizard *wizard = dev_get_drvdata(dev);
 	unsigned int reg;
 	int ret;
 
-	ret = regmap_read(super->regmap, SUPER_INPUTS, &reg);
+	ret = regmap_read(wizard->regmap, WIZARD_INPUTS, &reg);
 	if (ret)
 		return ret;
 	ret = sprintf(buf, "%d\n", !!(reg & INPUTS_USB_VBUS));
@@ -88,7 +88,7 @@ static DEVICE_ATTR_RO(vbus_present);
 static ssize_t wake_en_store(struct device *dev, struct device_attribute *attr,
 			     const char *buf, size_t count)
 {
-	struct ts_supervisor *super = dev_get_drvdata(dev);
+	struct ts_wizard *wizard = dev_get_drvdata(dev);
 	unsigned int ctrl_reg = 0;
 	bool en;
 	int ret;
@@ -100,7 +100,7 @@ static ssize_t wake_en_store(struct device *dev, struct device_attribute *attr,
 	if (en)
 		ctrl_reg |= FLG_WAKE_EN;
 
-	ret = regmap_update_bits(super->regmap, SUPER_FLAGS,
+	ret = regmap_update_bits(wizard->regmap, WIZARD_FLAGS,
 				 FLG_WAKE_EN,
 				 ctrl_reg);
 
@@ -110,11 +110,11 @@ static ssize_t wake_en_store(struct device *dev, struct device_attribute *attr,
 static ssize_t wake_en_show(struct device *dev,
 			    struct device_attribute *attr, char *buf)
 {
-	struct ts_supervisor *super = dev_get_drvdata(dev);
+	struct ts_wizard *wizard = dev_get_drvdata(dev);
 	unsigned int reg;
 	int ret;
 
-	ret = regmap_read(super->regmap, SUPER_FLAGS, &reg);
+	ret = regmap_read(wizard->regmap, WIZARD_FLAGS, &reg);
 	if (ret)
 		return ret;
 	ret = sprintf(buf, "%d\n", !!(reg & FLG_WAKE_EN));
@@ -125,7 +125,7 @@ static DEVICE_ATTR_RW(wake_en);
 static ssize_t console_cfg_store(struct device *dev, struct device_attribute *attr,
 				 const char *buf, size_t count)
 {
-	struct ts_supervisor *super = dev_get_drvdata(dev);
+	struct ts_wizard *wizard = dev_get_drvdata(dev);
 	unsigned int ctrl_reg;
 	int ret;
 
@@ -136,7 +136,7 @@ static ssize_t console_cfg_store(struct device *dev, struct device_attribute *at
 	else
 		return -EINVAL;
 
-	ret = regmap_update_bits(super->regmap, SUPER_FLAGS, FLG_FORCE_USB_CON,
+	ret = regmap_update_bits(wizard->regmap, WIZARD_FLAGS, FLG_FORCE_USB_CON,
 				 ctrl_reg);
 
 	return ret ? ret : count;
@@ -145,11 +145,11 @@ static ssize_t console_cfg_store(struct device *dev, struct device_attribute *at
 static ssize_t console_cfg_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	struct ts_supervisor *super = dev_get_drvdata(dev);
+	struct ts_wizard *wizard = dev_get_drvdata(dev);
 	unsigned int reg;
 	int ret;
 
-	ret = regmap_read(super->regmap, SUPER_FLAGS, &reg);
+	ret = regmap_read(wizard->regmap, WIZARD_FLAGS, &reg);
 	if (ret)
 		return ret;
 	
@@ -183,33 +183,33 @@ static struct attribute_group ts9370_attr_group = {
 	.attrs	= ts9370_sysfs_entries,
 };
 
-static int ts_supervisor_i2c_probe(struct i2c_client *client)
+static int ts_wizard_i2c_probe(struct i2c_client *client)
 {
-	struct ts_supervisor *super;
+	struct ts_wizard *wizard;
 	struct device *dev = &client->dev;
 	int err = 0, i;
 	uint32_t model, revision;
 
-	super = devm_kzalloc(dev, sizeof(struct ts_supervisor),
+	wizard = devm_kzalloc(dev, sizeof(struct ts_wizard),
 			     GFP_KERNEL);
-	if (!super)
+	if (!wizard)
 		return -ENOMEM;
 
-	dev_set_drvdata(dev, super);
+	dev_set_drvdata(dev, wizard);
 
-	super->regmap = devm_regmap_init_i2c(client, &ts_supervisor_i2c_regmap);
-	if (IS_ERR(super->regmap)) {
-		err = PTR_ERR(super->regmap);
+	wizard->regmap = devm_regmap_init_i2c(client, &ts_wizard_i2c_regmap);
+	if (IS_ERR(wizard->regmap)) {
+		err = PTR_ERR(wizard->regmap);
 		dev_err(dev, "Failed to allocate register map: %d\n", err);
 		return err;
 	}
 
-	err = regmap_read(super->regmap, SUPER_MODEL, &model);
+	err = regmap_read(wizard->regmap, WIZARD_MODEL, &model);
 	if (err < 0)
-		dev_err(dev, "error reading reg %u", SUPER_MODEL);
-	err = regmap_read(super->regmap, SUPER_REV_INFO, &revision);
+		dev_err(dev, "error reading reg %u", WIZARD_MODEL);
+	err = regmap_read(wizard->regmap, WIZARD_REV_INFO, &revision);
 	if (err < 0)
-		dev_err(dev, "error reading reg %u", SUPER_REV_INFO);
+		dev_err(dev, "error reading reg %u", WIZARD_REV_INFO);
 	dev_info(&client->dev, "Model %04X rev %d%s\n",
 		 model,
 		 revision & 0x7fff,
@@ -224,8 +224,8 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 
 		/* Set up and register the platform devices. */
 		for (i = 0; i < ARRAY_SIZE(ts7250v3_devs); i++) {
-			ts7250v3_devs[i].platform_data = super;
-			ts7250v3_devs[i].pdata_size = sizeof(struct ts_supervisor);
+			ts7250v3_devs[i].platform_data = wizard;
+			ts7250v3_devs[i].pdata_size = sizeof(struct ts_wizard);
 		}
 
 		return mfd_add_devices(dev, 0, ts7250v3_devs,
@@ -239,8 +239,8 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 
 		/* Set up and register the platform devices. */
 		for (i = 0; i < ARRAY_SIZE(ts9370_devs); i++) {
-			ts9370_devs[i].platform_data = super;
-			ts9370_devs[i].pdata_size = sizeof(struct ts_supervisor);
+			ts9370_devs[i].platform_data = wizard;
+			ts9370_devs[i].pdata_size = sizeof(struct ts_wizard);
 		}
 
 		return mfd_add_devices(dev, 0, ts9370_devs,
@@ -248,33 +248,33 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 
 		break;
 	default:
-		dev_warn(dev, "tssupervisor-core: ts_supervisor_i2c_probe: unknown model: %04X (so no sysfs entries)\n", model);
+		dev_warn(dev, "tswizard-core: ts_wizard_i2c_probe: unknown model: %04X (so no sysfs entries)\n", model);
 		break;
 	}
 	return 0;
 }
 
-static const struct i2c_device_id ts_supervisor_i2c_id[] = {
-	{ "tssupervisor", 0 },
+static const struct i2c_device_id ts_wizard_i2c_id[] = {
+	{ "wizard", 0 },
 	{ /* sentinel */ }
 };
-MODULE_DEVICE_TABLE(i2c, ts_supervisor_i2c_id);
+MODULE_DEVICE_TABLE(i2c, ts_wizard_i2c_id);
 
-static const struct of_device_id ts_supervisor_i2c_of_match[] = {
-	{ .compatible = "technologic,supervisor", },
+static const struct of_device_id ts_wizard_i2c_of_match[] = {
+	{ .compatible = "technologic,wizard", },
 	{ /* sentinel */ },
 };
-MODULE_DEVICE_TABLE(of, ts_supervisor_i2c_of_match);
+MODULE_DEVICE_TABLE(of, ts_wizard_i2c_of_match);
 
-static struct i2c_driver ts_supervisor_i2c_driver = {
+static struct i2c_driver ts_wizard_i2c_driver = {
 	.driver = {
-		.name = "tssupervisor-core",
-		.of_match_table = of_match_ptr(ts_supervisor_i2c_of_match),
+		.name = "tswizard-core",
+		.of_match_table = of_match_ptr(ts_wizard_i2c_of_match),
 	},
-	.probe = ts_supervisor_i2c_probe,
-	.id_table = ts_supervisor_i2c_id,
+	.probe = ts_wizard_i2c_probe,
+	.id_table = ts_wizard_i2c_id,
 };
-module_i2c_driver(ts_supervisor_i2c_driver);
+module_i2c_driver(ts_wizard_i2c_driver);
 
 MODULE_AUTHOR("Mark Featherston <mark@embeddedts.com>");
 MODULE_DESCRIPTION("MFD driver for embeddedTS Supervisory microcontroller");

@@ -9,7 +9,7 @@
 #include <linux/platform_device.h>
 #include <linux/regmap.h>
 #include <linux/fwnode.h>
-#include <linux/mfd/ts_supervisor.h>
+#include <linux/mfd/ts_wizard.h>
 
 #define MAX_IRQS	16
 
@@ -48,12 +48,12 @@ static const struct regmap_irq_chip wizard_regmap_ic = {
 
 static int wizard_irq_probe(struct platform_device *pdev)
 {
-	struct ts_supervisor *super = dev_get_drvdata(pdev->dev.parent);
+	struct ts_wizard *wizard = dev_get_drvdata(pdev->dev.parent);
 	struct device *dev   = &pdev->dev;
 	struct regmap_irq_chip_data *ricd;
 	int parent_irq;
 
-	if (!super || !super->regmap)
+	if (!wizard || !wizard->regmap)
 		return -ENODEV;
 
 	parent_irq = platform_get_irq(pdev, 0);
@@ -62,7 +62,7 @@ static int wizard_irq_probe(struct platform_device *pdev)
 
 	return devm_regmap_add_irq_chip_fwnode(dev,
 					       dev_fwnode(dev),
-					       super->regmap,
+					       wizard->regmap,
 					       parent_irq,
 					       0,
 					       0,

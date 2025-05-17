@@ -2,25 +2,25 @@
 #ifndef __LINUX_MFD_TS_SUPERVISOR_H
 #define __LINUX_MFD_TS_SUPERVISOR_H
 
-struct ts_supervisor {
+struct ts_wizard {
 	struct regmap *regmap;
 };
 
 /* I2C Register addresses */
-#define SUPER_MODEL         0
-#define SUPER_REV_INFO      1
-#define SUPER_ADC_CHAN_ADV  2
-#define SUPER_FEATURES0     3
-#define SUPER_CMDS          8
-#define SUPER_FLAGS         16
-#define SUPER_INPUTS        24
-#define SUPER_REBOOT_REASON 32
-#define SUPER_SILO_BASE     64
+#define WIZARD_MODEL         0
+#define WIZARD_REV_INFO      1
+#define WIZARD_ADC_CHAN_ADV  2
+#define WIZARD_FEATURES0     3
+#define WIZARD_CMDS          8
+#define WIZARD_FLAGS         16
+#define WIZARD_INPUTS        24
+#define WIZARD_REBOOT_REASON 32
+#define WIZARD_SILO_BASE     64
 
-#define SUPER_ADC_BASE      128
-#define SUPER_ADC_LAST      159
-#define SUPER_TEMPERATURE   160
-#define SUPER_CURRENT       161
+#define WIZARD_ADC_BASE      128
+#define WIZARD_ADC_LAST      159
+#define WIZARD_TEMPERATURE   160
+#define WIZARD_CURRENT       161
 
 #define WIZARD_IRQCHIP_BASE  512
 #define WIZARD_SILO_IRQ_BASE 528
@@ -41,14 +41,14 @@ enum gen_inputs_t {
 	INPUTS_USB_VBUS = BIT(0),
 };
 
-enum super_features_t {
-	SUPER_FEAT_CT = BIT(6),        // Channel Table visible
-	SUPER_FEAT_SILO = BIT(5),
-	SUPER_FEAT_BOOT_MODE = BIT(4),
-	SUPER_FEAT_RBTR = BIT(3),      // TBI on i.MX93
-	SUPER_FEAT_SN = BIT(2),
-	SUPER_FEAT_FWUPD = BIT(1),
-	SUPER_FEAT_RSTC = BIT(0),
+enum wizard_features_t {
+	WIZARD_FEAT_CT = BIT(6),        // Channel Table visible
+	WIZARD_FEAT_SILO = BIT(5),
+	WIZARD_FEAT_BOOT_MODE = BIT(4),
+	WIZARD_FEAT_RBTR = BIT(3),      // TBI on i.MX93
+	WIZARD_FEAT_SN = BIT(2),
+	WIZARD_FEAT_FWUPD = BIT(1),
+	WIZARD_FEAT_RSTC = BIT(0),
 };
 
 enum reboot_reasons_t {
@@ -63,7 +63,7 @@ enum reboot_reasons_t {
 	REBOOT_REASON_WAKE_FROM_USB_VBUS = 8,
 };
 
-enum super_cmds_t {
+enum wizard_cmds_t {
 	I2C_CMD_RESERVED3 = BIT(3),
 	I2C_CMD_RESERVED2 = BIT(2),
 	I2C_HALT = BIT(1),

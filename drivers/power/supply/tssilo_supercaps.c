@@ -13,24 +13,24 @@
 #include <linux/regmap.h>
 #include <linux/power_supply.h>
 #include <linux/of.h>
-#include <linux/mfd/ts_supervisor.h>
+#include <linux/mfd/ts_wizard.h>
 
 #include <linux/interrupt.h>
 #include <linux/workqueue.h>
 #include <linux/delay.h>
 
-#define SILO_RESERVED0					(SUPER_SILO_BASE + 0)
-#define SILO_STATUS					(SUPER_SILO_BASE + 1)
-#define SILO_CONTROL					(SUPER_SILO_BASE + 2)
+#define SILO_RESERVED0					(WIZARD_SILO_BASE + 0)
+#define SILO_STATUS					(WIZARD_SILO_BASE + 1)
+#define SILO_CONTROL					(WIZARD_SILO_BASE + 2)
 
-#define SILO_REQUESTED_CHG_CURRENT_MA			(SUPER_SILO_BASE + 4)
-#define SILO_MAX_SUPPORTED_CHRG_CURRENT_MA		(SUPER_SILO_BASE + 5)
+#define SILO_REQUESTED_CHG_CURRENT_MA			(WIZARD_SILO_BASE + 4)
+#define SILO_MAX_SUPPORTED_CHRG_CURRENT_MA		(WIZARD_SILO_BASE + 5)
 
-#define SILO_PCT_CHARGED				(SUPER_SILO_BASE + 8)
-#define SILO_CRITICAL_PCT				(SUPER_SILO_BASE + 9)
+#define SILO_PCT_CHARGED				(WIZARD_SILO_BASE + 8)
+#define SILO_CRITICAL_PCT				(WIZARD_SILO_BASE + 9)
 
-#define SILO_STARTUP_REQUESTED_CHG_CURRENT_MA		(SUPER_SILO_BASE + 12)
-#define SILO_MIN_PWR_ON_PCT				(SUPER_SILO_BASE + 13)
+#define SILO_STARTUP_REQUESTED_CHG_CURRENT_MA		(WIZARD_SILO_BASE + 12)
+#define SILO_MIN_PWR_ON_PCT				(WIZARD_SILO_BASE + 13)
 
 #define SILO_IRQS_BASE					(WIZARD_SILO_IRQ_BASE)
 #define SILO_IRQS_PENDING				(SILO_IRQS_BASE + IRQ_STATUS)
@@ -315,7 +315,7 @@ static irqreturn_t silo_irq_handler(int irq, void *dev_id)
 
 static int ts_silo_probe(struct platform_device *pdev)
 {
-	struct ts_supervisor *wizard = dev_get_drvdata(pdev->dev.parent);
+	struct ts_wizard *wizard = dev_get_drvdata(pdev->dev.parent);
 	struct device *dev = &pdev->dev;
 	struct silo_data *data;
 	struct power_supply_config psy_cfg = {};
@@ -366,7 +366,7 @@ static int ts_silo_remove(struct platform_device *pdev)
 }
 
 static const struct of_device_id silo_of_match[] = {
-	{ .compatible = "technologic,silo", },
+	{ .compatible = "technologic,wizard-silo", },
 	{}
 };
 MODULE_DEVICE_TABLE(of, silo_of_match);

@@ -6,7 +6,7 @@
 #include <linux/regmap.h>
 #include <linux/mfd/core.h>
 #include <linux/reboot.h>
-#include <linux/mfd/ts_supervisor.h>
+#include <linux/mfd/ts_wizard.h>
 
 /* We need a static device to support this for shutdown/reboot hooks */
 static struct device *ts_rstc_device;
@@ -15,13 +15,13 @@ static atomic_t ts_restart_nb_refcnt = ATOMIC_INIT(0);
 static ssize_t reboot_reason_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	struct ts_supervisor *super = dev_get_drvdata(dev);
+	struct ts_wizard *wizard = dev_get_drvdata(dev);
 	uint32_t reason;
 	int len, err;
 
-	err = regmap_read(super->regmap, SUPER_REBOOT_REASON, &reason);
+	err = regmap_read(wizard->regmap, WIZARD_REBOOT_REASON, &reason);
 	if (err < 0)
-		dev_err(dev, "error reading reg %u", SUPER_REBOOT_REASON);
+		dev_err(dev, "error reading reg %u", WIZARD_REBOOT_REASON);
 
 	switch (reason) {
 	case REBOOT_REASON_POR:
@@ -60,22 +60,22 @@ static ssize_t reboot_reason_show(struct device *dev,
 }
 static DEVICE_ATTR_RO(reboot_reason);
 
-static struct attribute *ts_supervisor_sysfs_entries[] = {
+static struct attribute *ts_wizard_sysfs_entries[] = {
 	&dev_attr_reboot_reason.attr,
 	NULL,
 };
 
-static struct attribute_group ts_supervisor_attr_group = {
-	.attrs	= ts_supervisor_sysfs_entries,
+static struct attribute_group ts_wizard_attr_group = {
+	.attrs	= ts_wizard_sysfs_entries,
 };
 
-static int ts_supervisor_restart(struct sys_off_data *data)
+static int ts_wizard_restart(struct sys_off_data *data)
 {
-	struct ts_supervisor *super = data->cb_data;
+	struct ts_wizard *wizard = data->cb_data;
 	int err = -ENOENT;
 
-	if (super) {
-		err = regmap_write(super->regmap, SUPER_CMDS, I2C_REBOOT);
+	if (wizard) {
+		err = regmap_write(wizard->regmap, WIZARD_CMDS, I2C_REBOOT);
 		if (!err)
 			mdelay(1000);
 	}
@@ -87,11 +87,11 @@ static int ts_supervisor_restart(struct sys_off_data *data)
 
 static int ts_wizard_do_poweroff(struct sys_off_data *data)
 {
-	struct ts_supervisor *super = data->cb_data;
+	struct ts_wizard *wizard = data->cb_data;
 	int err = -ENOENT;
 
-	if (super) {
-		err = regmap_write(super->regmap, SUPER_CMDS, I2C_HALT);
+	if (wizard) {
+		err = regmap_write(wizard->regmap, WIZARD_CMDS, I2C_HALT);
 		if (!err)
 			mdelay(1000);
 	}
@@ -100,26 +100,26 @@ static int ts_wizard_do_poweroff(struct sys_off_data *data)
 	return NOTIFY_DONE;
 }
 
-static int ts_supervisor_rstc_probe(struct platform_device *pdev)
+static int ts_wizard_rstc_probe(struct platform_device *pdev)
 {
-	struct ts_supervisor *super = dev_get_drvdata(pdev->dev.parent);
+	struct ts_wizard *wizard = dev_get_drvdata(pdev->dev.parent);
 	struct device *dev = &pdev->dev;
 	int err = 0;
 
-	dev_set_drvdata(dev, super);
+	dev_set_drvdata(dev, wizard);
 	if (atomic_inc_return(&ts_restart_nb_refcnt) == 1) {
 		ts_rstc_device = dev;
 		err = devm_register_sys_off_handler(dev,
 						    SYS_OFF_MODE_POWER_OFF_PREPARE,
 						    SYS_OFF_PRIO_DEFAULT,
 						    ts_wizard_do_poweroff,
-							super);
+							wizard);
 		if (err) {
 			dev_err(dev, "cannot register sys off handler (err=%d)\n", err);
 			return err;
 		}
 
-		err = devm_register_restart_handler(dev, ts_supervisor_restart, super);
+		err = devm_register_restart_handler(dev, ts_wizard_restart, wizard);
 		if (err) {
 			dev_err(dev, "cannot register restart handler (err=%d)\n", err);
 			atomic_dec(&ts_restart_nb_refcnt);
@@ -130,24 +130,24 @@ static int ts_supervisor_rstc_probe(struct platform_device *pdev)
 		dev_err(dev, "rstc already registered");
 	}
 
-	err = sysfs_create_group(&dev->kobj, &ts_supervisor_attr_group);
+	err = sysfs_create_group(&dev->kobj, &ts_wizard_attr_group);
 	if (err)
 		dev_warn(dev, "error creating sysfs entries\n");
 
-	dev_info(dev, "Using supervisor for reset controller");
+	dev_info(dev, "Using wizard for reset controller");
 
 	return 0;
 }
 
-static struct platform_driver tssupervisor_rstc_driver = {
+static struct platform_driver tswizard_rstc_driver = {
 	.driver = {
-		.name = "tssupervisor-reset",
+		.name = "tswizard-reset",
 	},
-	.probe = ts_supervisor_rstc_probe,
+	.probe = ts_wizard_rstc_probe,
 };
 
-module_platform_driver(tssupervisor_rstc_driver);
+module_platform_driver(tswizard_rstc_driver);
 
-MODULE_DESCRIPTION("embeddedTS supervisor reset controller driver");
+MODULE_DESCRIPTION("embeddedTS wizard reset controller driver");
 MODULE_AUTHOR("Mark Featherston <mark@embeddedts.com>");
 MODULE_LICENSE("GPL");
