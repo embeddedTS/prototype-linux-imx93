@@ -1,4 +1,3 @@
-#define DEBUG
 // SPDX-License-Identifier: GPL-2.0
 /*
  * I2C ADC driver for the Wizard supervisory microcontroller.
@@ -124,8 +123,6 @@ static int ts_wizard_adc_probe(struct platform_device *pdev)
 	uint32_t chan_count;
 	int ret;
 
-	pr_debug("tswizard-adc: Ooh, I've been probed!\n");
-
 	ret = regmap_read(wizard->regmap, WIZARD_ADC_CHAN_ADV, &chan_count);
 	if (ret < 0) {
 		dev_err(dev, "error reading reg %u", WIZARD_ADC_CHAN_ADV);
@@ -164,7 +161,6 @@ static int ts_wizard_adc_probe(struct platform_device *pdev)
 
 static const struct of_device_id tswizard_of_match[] = {
 	{ .compatible = "technologic,tswizard-adc", },
-	{ .compatible = "technologic,tssupervisor-adc", },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, tsadc_of_match);
