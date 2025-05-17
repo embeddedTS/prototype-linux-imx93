@@ -3,12 +3,7 @@
 #define __LINUX_MFD_TS_SUPERVISOR_H
 
 struct ts_supervisor {
-	struct i2c_client *client;
 	struct regmap *regmap;
-	struct platform_device *adc_pdev;
-	struct platform_device *rstc_pdev;
-	struct platform_device *silo_pdev;
-	struct platform_device *temp_pdev;
 };
 
 /* I2C Register addresses */

@@ -326,7 +326,6 @@ static int ts_silo_probe(struct platform_device *pdev)
 	unsigned int version;
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-	wizard->silo_pdev = pdev;
 	data->dev = dev;
 	data->regmap = wizard->regmap;
 	platform_set_drvdata(pdev, data);

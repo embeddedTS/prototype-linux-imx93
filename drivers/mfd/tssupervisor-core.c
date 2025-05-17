@@ -197,7 +197,6 @@ static int ts_supervisor_i2c_probe(struct i2c_client *client)
 
 	dev_set_drvdata(dev, super);
 
-	super->client = client;
 	super->regmap = devm_regmap_init_i2c(client, &ts_supervisor_i2c_regmap);
 	if (IS_ERR(super->regmap)) {
 		err = PTR_ERR(super->regmap);
