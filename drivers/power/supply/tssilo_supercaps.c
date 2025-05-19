@@ -32,10 +32,6 @@
 #define SILO_STARTUP_REQUESTED_CHG_CURRENT_MA		(WIZARD_SILO_BASE + 12)
 #define SILO_MIN_PWR_ON_PCT				(WIZARD_SILO_BASE + 13)
 
-#define SILO_IRQS_BASE					(WIZARD_SILO_IRQ_BASE)
-#define SILO_IRQS_PENDING				(SILO_IRQS_BASE + IRQ_STATUS)
-#define SILO_ACK_IRQS					(SILO_IRQS_BASE + IRQ_ACK)
-
 #define SILO_STATUS_CHARGING		BIT(0)
 #define SILO_STATUS_PWR_FAIL		BIT(15)
 #define SILO_STATUS_MODE_MASK		0x3E
@@ -291,25 +287,7 @@ static const struct power_supply_desc silo_desc = {
 
 static irqreturn_t silo_irq_handler(int irq, void *dev_id)
 {
-	struct silo_data *data = dev_id;
-	unsigned int val;
-	int ret;
-
-	ret = regmap_read(data->regmap, SILO_IRQS_PENDING, &val);
-	if (ret)
-		return IRQ_NONE;
-	/*
-	 * We do not store state, so we have to ack everything and
-	 * then let the Power Supply framework do its 20-questions
-	 * thing with the Wizard/SILO to find out, for instance, that
-	 * we're now below below the CAPACITY_ALERT_MIN.
-	 */
-	ret = regmap_write(data->regmap, SILO_ACK_IRQS, val);
-	if (ret)
-		return IRQ_NONE;
-
 	power_supply_changed(data->psy);
-
 	return IRQ_HANDLED;
 }
 

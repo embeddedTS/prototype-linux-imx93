@@ -23,7 +23,6 @@ struct ts_wizard {
 #define WIZARD_CURRENT       161
 
 #define WIZARD_IRQCHIP_BASE  512
-#define WIZARD_SILO_IRQ_BASE 528
 
 enum gen_flags_t {
 	FLG_FORCE_USB_CON = BIT(4),
