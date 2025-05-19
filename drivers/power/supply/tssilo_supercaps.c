@@ -287,6 +287,7 @@ static const struct power_supply_desc silo_desc = {
 
 static irqreturn_t silo_irq_handler(int irq, void *dev_id)
 {
+	struct silo_data *data = dev_id;
 	power_supply_changed(data->psy);
 	return IRQ_HANDLED;
 }
