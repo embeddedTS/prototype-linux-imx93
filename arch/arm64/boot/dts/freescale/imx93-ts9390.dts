@@ -698,6 +698,12 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpspi4>;
 	status = "okay";
+
+	spidev0: spi@0 {
+		compatible = "technologic,spi-header";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+	};
 };
 
 &lpuart1 {
