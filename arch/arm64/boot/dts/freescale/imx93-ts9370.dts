@@ -394,7 +394,7 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&pinctrl_eqos_phy>;
 			reset-gpios = <&gpio2 28 GPIO_ACTIVE_LOW>;
-			reset-assert-us = <2>;
+			reset-assert-us = <6>;
 			reset-deassert-us = <50000>;
 		};
 	};
@@ -421,7 +421,7 @@
 			pinctrl-0 = <&pinctrl_fec_phy>;
 			eee-broken-1000t;
 			reset-gpios = <&gpio2 29 GPIO_ACTIVE_LOW>;
-			reset-assert-us = <2>;
+			reset-assert-us = <6>;
 			reset-deassert-us = <50000>;
 		};
 	};
