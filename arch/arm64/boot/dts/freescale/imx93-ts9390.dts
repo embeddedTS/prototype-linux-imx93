@@ -9,6 +9,8 @@
 #include <dt-bindings/pwm/pwm.h>
 #include "imx93.dtsi"
 
+#include "ts9390-pinfunc.h"
+
 / {
 	model = "embeddedTS TS-9390";
 	compatible = "technologic,ts9390", "fsl,imx93";
@@ -341,6 +343,11 @@
 
 			#interrupt-cells = <1>;
 			interrupt-controller;
+		};
+
+		fpga_xbar: pinctrl@28002000 {
+			compatible = "technologic,ts9390-xbar";
+			reg = <0x2000 0x200>;
 		};
 
 		fpga_gpio0: gpio@28000040 {
