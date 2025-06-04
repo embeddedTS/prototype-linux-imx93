@@ -363,14 +363,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"EN_GREEN_LED_N",    "EN_YEL_LED_N",      "EN_RED_LED_N",      "",
-				"NIM_RESET_N",       "NIM_CTS_N",         "NIM_PWR_ON_N",      "EN_NIM_USB_N",
-				"EN_NIM_4V",         "EN_NIM_3P3V",       "NIM_TXD",           "NIM_RXD",
-				"EN_USB_HOST1_VBUS", "EN_USB_HOST2_VBUS", "MIKRO_TXD",         "MIKRO_RXD",
-				"MIKRO_SPI_CLK",     "MIKRO_SPI_CS_N",    "MIKRO_SPI_MISO",    "MIKRO_SPI_MOSI",
-				"MIKRO_RESET_N",     "MIKRO_AN",          "MIKRO_PWM",         "MIKRO_INT",
-				"EN_LS_OUT_1",       "EN_LS_OUT_2",       "EN_LS_OUT_3",       "EN_LS_OUT_4",
-				"EN_HS_SW",          "DIO_FAULT_N",       "NIM_STATUS",        "";
+				"EN_GREEN_LED#",     "",                  "EN_RED_LED#",    "",
+				"NIM_RESET#",        "NIM_CTS#",          "NIM_PWR_ON#",    "EN_NIM_USB#",
+				"EN_NIM_4V",         "EN_NIM_3P3V",       "NIM_TXD",        "NIM_RXD",
+				"EN_USB_HOST1_VBUS", "EN_USB_HOST2_VBUS", "MIKRO_TXD",      "MIKRO_RXD",
+				"MIKRO_SPI_CLK",     "MIKRO_SPI_CS#",     "MIKRO_SPI_MISO", "MIKRO_SPI_MOSI",
+				"MIKRO_RESET#",      "MIKRO_AN",          "MIKRO_PWM",      "MIKRO_INT",
+				"",                  "",                  "",               "",
+				"",                  "",                  "NIM_STATUS",     "";
 		};
 
 		fpga_gpio1: gpio@28000080 {
@@ -385,14 +385,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"EN_2ND_PORT_232",   "EN_CAN_1",     "EN_CAN_2",       "",
-				"USB_HUB_RESET#",    "PUSH_SW_N",    "",               "",
+				"EN_2ND_PORT_232",   "EN_CAN_1#",    "EN_CAN_2#",      "",
+				"USB_HUB_RESET#",    "PUSH_SW#",     "TPM_IRQ#",       "",
 				"",                  "",             "",               "",
 				"",                  "",             "",               "",
 				"",                  "",             "",               "",
-				"",                  "EN_ADC_3_12V", "EN_ADC_1_2_12V", "AN_SEL_0",
-				"AN_SEL_1",          "EN_CL_1_2",    "EN_CL_3",        "DP_RESET_PADN",
-				"NO_SCAP_CHRG_PADN", "EN_SPKR_AMP",  "BT_EN",          "WIFI_EN";
+				"",                  "EN_ADC_3_12V", "EN_ADC_1_2_12V", "",
+				"",                  "EN_CL_1_2",    "EN_CL_3",        "DP_RESET#",
+				"NO_SCAP_CHRG#",     "EN_SPKR_AMP",  "BT_EN",          "WIFI_EN";
 		};
 
 		fpga_gpio2: gpio@280000c0 {
@@ -407,14 +407,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"MAGNET_IRQ",     "GYRO_IRQ",       "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "";
+				"MAGNET_IRQ",  "GYRO_IRQ",              "LCD_IRQ",     "LCD_STANDBY",
+				"LCD_RESET#",  "EN_RELAY_1",            "EN_RELAY_2",  "",
+				"",            "",                      "",            "",
+				"",            "",                      "",            "CLEAR_FAULT",
+				"EN_HS_SW",    "EN_LS_OUT_1",           "EN_LS_OUT_2", "EN_LS_OUT_3",
+				"EN_LS_OUT_4", "CIRCUIT_BREAKER_FAULT", "DIO_FAULT#",  "DIO_1_IN",
+				"DIO_2_IN",    "DIO_3_IN",              "DIO_4_IN",    "DC_1",
+				"DC_3",        "DC_5",                  "DC_7",        "DC_9";
 		};
 
 		fpga_pwm0: pwm@28000400 {
