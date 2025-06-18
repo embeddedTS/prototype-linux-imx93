@@ -42,7 +42,7 @@ static const struct regmap_irq_chip wizard_regmap_ic = {
 	.irqs           = wizard_irqs,
 	.num_irqs       = ARRAY_SIZE(wizard_irqs),
 	.num_regs       = 1,
-	.irq_reg_stride  = 1,
+	.irq_reg_stride = 1,
 
 	.status_base    = WIZARD_IRQCHIP_BASE + IRQ_STATUS,
 	.ack_base       = WIZARD_IRQCHIP_BASE + IRQ_ACK,
@@ -79,16 +79,16 @@ static const struct of_device_id wizard_of_match[] = {
 	{ .compatible = "technologic,wizard-irq", },
 	{ }
 };
-MODULE_DEVICE_TABLE(of, tsadc_of_match);
+MODULE_DEVICE_TABLE(of, wizard_of_match);
 
-static struct platform_driver tsadc_driver = {
+static struct platform_driver wizard_driver = {
 	.driver = {
 		.name   = "wizard-irq",
 		.of_match_table = wizard_of_match,
 	},
 	.probe	= wizard_irq_probe,
 };
-module_platform_driver(tsadc_driver);
+module_platform_driver(wizard_driver);
 
 MODULE_DESCRIPTION("embeddedTS wizard IRQ controller");
 MODULE_AUTHOR("Mark Featherston <mark@embeddedts.com>");
