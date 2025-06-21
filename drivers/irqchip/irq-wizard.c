@@ -17,6 +17,7 @@
 #define IRQ_ACK         1
 #define IRQ_MASK_SET    2
 #define IRQ_MASK_CLR    3
+#define IRQ_MASK_RW     4
 
 static const struct regmap_irq wizard_irqs[MAX_IRQS] = {
 	REGMAP_IRQ_REG(0, 0, BIT(0)),
@@ -46,9 +47,7 @@ static const struct regmap_irq_chip wizard_regmap_ic = {
 
 	.status_base    = WIZARD_IRQCHIP_BASE + IRQ_STATUS,
 	.ack_base       = WIZARD_IRQCHIP_BASE + IRQ_ACK,
-	.mask_base      = WIZARD_IRQCHIP_BASE + IRQ_MASK_SET,
-	.unmask_base    = WIZARD_IRQCHIP_BASE + IRQ_MASK_CLR,
-	.mask_unmask_non_inverted = true,
+	.mask_base      = WIZARD_IRQCHIP_BASE + IRQ_MASK_RW,
 };
 
 static int wizard_irq_probe(struct platform_device *pdev)
