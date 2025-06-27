@@ -15,6 +15,12 @@
 			compatible = "technologic,ts4300-ts8551", "technologic,ts4300", "fsl,imx93";
 		};
 	};
+	fragment@5 {
+		target = <&wizard_silo>;
+		__overlay__ {
+			status = "enabled";
+		};
+	};
 };
 
 &lpspi4 {

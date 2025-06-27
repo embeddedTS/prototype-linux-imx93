@@ -488,7 +488,6 @@
 			compatible = "technologic,wizard-silo";
 			interrupt-parent = <&wizard_irq>;
 			interrupts = <0>;
-			/* Will re-enable once development is tested here */
 			status = "disabled";
 		};
 
