@@ -71,7 +71,7 @@ static int ts9370_gpio_get(struct gpio_chip *chip, unsigned int pin)
 
 	regmap_read(p->map, TS9370_IN, &in);
 
-	return (in & BIT(pin));
+	return !!(in & BIT(pin));
 }
 
 static int ts9370_gpio_direction_input(struct gpio_chip *chip,
@@ -108,7 +108,6 @@ static int ts9370_gpio_direction_get(struct gpio_chip *chip,
 	regmap_read(p->map, TS9370_OE_IN, &oe_in);
 	return !(oe_in & BIT(pin));
 }
-
 
 static void gpio_ts9370_irq_mask(struct irq_data *d)
 {
