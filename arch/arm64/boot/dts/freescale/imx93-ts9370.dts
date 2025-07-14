@@ -87,6 +87,21 @@
 		power-domains = <&mlmix>;
 	};
 
+	spi_adc_mux: adc-mux {
+		compatible = "io-channel-mux";
+		io-channels = <&spi_adc 0>;
+		io-channel-names = "parent";
+
+		mux-controls = <&mux_adc>;
+		mux-control-names = "an_sel";
+
+		channels = "AN_1",
+			   "AN_2",
+			   "AN_3",
+			   "AN_4",
+			   "MIKRO_AN";
+	};
+
 	clk_dp: clk-dp {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -130,6 +145,22 @@
 			gpios = <&fpga_gpio0 1 GPIO_ACTIVE_LOW>;
 			default-state = "off";
 		};
+	};
+
+	mux_spi: mux-controller {
+		compatible = "gpio-mux";
+		#mux-control-cells = <0>;
+		mux-gpios = <&fpga_gpio2 7 GPIO_ACTIVE_HIGH>,
+			    <&fpga_gpio2 8 GPIO_ACTIVE_HIGH>,
+			    <&fpga_gpio2 9 GPIO_ACTIVE_HIGH>;
+	};
+
+	mux_adc: mux-controller {
+		compatible = "gpio-mux";
+		#mux-control-cells = <0>;
+		mux-gpios = <&fpga_gpio1 18 GPIO_ACTIVE_HIGH>,
+			    <&fpga_gpio1 19 GPIO_ACTIVE_HIGH>,
+			    <&fpga_gpio1 20 GPIO_ACTIVE_HIGH>;
 	};
 
 	reg_can1_sw5v2: regulator-can1-en {
@@ -670,12 +701,35 @@
 	num-cs = <1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpspi4>;
+	num-cs = <1>;
 	status = "okay";
 
-	spidev0: spi@0 {
-		compatible = "technologic,spi-header";
+	spi_mux_bus: spi@0 {
+		compatible = "spi-mux";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
+		mux-controls = <&mux_spi>;
+		#address-cells = <1>;
+		#size-cells    = <0>;
+
+		spi_adc: adc@0 {
+			compatible = "ti,adc121s021";
+			reg = <0>;
+			vref-supply = <&reg_vref_3v3>;
+			spi-max-frequency = <2000000>;
+			#io-channel-cells = <1>;
+		};
+
+		mikrobus_spi: spi@1 {
+			compatible = "technologic,spi-header";
+			reg = <1>;
+			spi-max-frequency = <10000000>;
+		};
+
+		dc_header_spi: spi@2 {
+			compatible = "technologic,spi-header";
+			reg = <2>;
+			spi-max-frequency = <10000000>;
+		};
 	};
 };
 
