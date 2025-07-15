@@ -408,6 +408,10 @@ struct nxp_fspi {
 	struct mutex lock;
 	struct pm_qos_request pm_qos_req;
 	int selected;
+#define FSPI_INITILIZED		(1 << 0)
+#define FSPI_RXCLKSRC_3		(1 << 1)
+#define FSPI_DTR_ODD_ADDR	(1 << 2)
+	int flags;
 	unsigned long rate;
 };
 
@@ -1575,6 +1579,7 @@ static int nxp_fspi_resume(struct device *dev)
 
 	return 0;
 }
+#endif
 
 static const struct of_device_id nxp_fspi_dt_ids[] = {
 	{ .compatible = "nxp,lx2160a-fspi", .data = (void *)&lx2160a_data, },
