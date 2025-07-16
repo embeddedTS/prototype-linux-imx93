@@ -9,7 +9,7 @@
 #include <dt-bindings/pwm/pwm.h>
 #include "imx93.dtsi"
 
-#include "ts9390-pinfunc.h"
+#include "imx93-ts9390-pinfunc.h"
 
 / {
 	model = "embeddedTS TS-9390";

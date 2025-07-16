@@ -14,3 +14,10 @@ config PINCTRL_TS9390
 	select PINCTRL_TSXBAR
 	help
 	  Say Y here to enable the TS-9390 pinctrl driver
+
+config PINCTRL_TS9370
+	tristate "TS-9370 pinctrl driver"
+	depends on ARCH_MXC
+	select PINCTRL_TSXBAR
+	help
+	  Say Y here to enable the TS-9370 pinctrl driver

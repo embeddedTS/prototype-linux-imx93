@@ -8,6 +8,8 @@
 #include <dt-bindings/leds/common.h>
 #include "imx93.dtsi"
 
+#include "imx93-ts9370-pinfunc.h"
+
 / {
 	model = "embeddedTS TS-9370";
 	compatible = "technologic,ts9370", "fsl,imx93";
@@ -360,6 +362,11 @@
 
 			#interrupt-cells = <1>;
 			interrupt-controller;
+		};
+
+		fpga_xbar: pinctrl@28002000 {
+			compatible = "technologic,ts9370-xbar";
+			reg = <0x2000 0x200>;
 		};
 
 		fpga_gpio0: gpio@28000040 {
