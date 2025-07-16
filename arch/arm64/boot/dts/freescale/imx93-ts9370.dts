@@ -100,11 +100,43 @@
 			   "AN_2",
 			   "AN_3",
 			   "AN_4",
-			   "MIKRO_AN",
-			   "",
-			   "",
-			   "",
-			   "";
+			   "MIKRO_AN";
+	};
+
+	an_1_voltage: an-1-voltage {
+		compatible = "voltage-divider";
+		io-channels = <&spi_adc_mux 0>;
+		label = "AN_1";
+		output-ohms = <2000>; /* R2: 2k */
+		full-ohms = <8040>;  /* R1 (6.04k) + R2 (2k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_2_voltage: an-2-voltage {
+		compatible = "voltage-divider";
+		io-channels = <&spi_adc_mux 1>;
+		label = "AN_2";
+		output-ohms = <2000>; /* R2: 2k */
+		full-ohms = <8040>;  /* R1 (6.04k) + R2 (2k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_3_voltage: an-3-voltage {
+		compatible = "voltage-divider";
+		io-channels = <&spi_adc_mux 2>;
+		label = "AN_3";
+		output-ohms = <2000>; /* R2: 2k */
+		full-ohms = <8040>;  /* R1 (6.04k) + R2 (2k) */
+		#io-channel-cells = <0>;
+	};
+
+	an_4_voltage: an-4-voltage {
+		compatible = "voltage-divider";
+		io-channels = <&spi_adc_mux 3>;
+		label = "AN_4";
+		output-ohms = <3010>; /* R2: 3.01k */
+		full-ohms = <50010>;  /* R1 (47k) + R2 (3.01k) */
+		#io-channel-cells = <0>;
 	};
 
 	clk_dp: clk-dp {
@@ -152,7 +184,7 @@
 		};
 	};
 
-	mux_spi: mux-controller {
+	mux_spi: spi-mux-controller {
 		compatible = "gpio-mux";
 		#mux-control-cells = <0>;
 		mux-gpios = <&fpga_gpio2 7 GPIO_ACTIVE_HIGH>,
@@ -160,7 +192,7 @@
 			    <&fpga_gpio2 9 GPIO_ACTIVE_HIGH>;
 	};
 
-	mux_adc: mux-controller {
+	mux_adc: adc-mux-controller {
 		compatible = "gpio-mux";
 		#mux-control-cells = <0>;
 		mux-gpios = <&fpga_gpio1 18 GPIO_ACTIVE_HIGH>,
