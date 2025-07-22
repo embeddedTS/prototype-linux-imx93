@@ -184,6 +184,13 @@
 			gpios = <&fpga_gpio0 1 GPIO_ACTIVE_LOW>;
 			default-state = "off";
 		};
+
+		led-3 {
+			color = <LED_COLOR_ID_BLUE>;
+			function = LED_FUNCTION_INDICATOR;
+			gpios = <&fpga_gpio0 3 GPIO_ACTIVE_HIGH>;
+			default-state = "off";
+		};
 	};
 
 	mux_spi: spi-mux-controller {
@@ -299,7 +306,6 @@
 	sound-max9860 {
 		compatible = "fsl,imx-audio-card";
 		model = "imx-max9860";
-		status = "okay";
 		pri-dai-link {
 			link-name = "max9860";
 			format = "i2s";
@@ -349,8 +355,6 @@
 		nxp,fspi-individual-mode;
 		ranges = <0 0x28000000 0x10000000>;
 
-		status = "okay";
-
 		fpga_irqc: irq@28000020 {
 			compatible = "technologic,ts9370-irqc";
 			reg = <0x20 0x20>;
@@ -382,14 +386,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"EN_GREEN_LED_N",    "EN_YEL_LED_N",      "EN_RED_LED_N",      "",
-				"NIM_RESET_N",       "NIM_CTS_N",         "NIM_PWR_ON_N",      "EN_NIM_USB_N",
-				"EN_NIM_4V",         "EN_NIM_3P3V",       "NIM_TXD",           "NIM_RXD",
+				"EN_GREEN_LED#",     "EN_YEL_LED#",       "EN_RED_LED#",       "EN_BLUE_LED",
+				"NIM_RESET#",        "NIM_CTS#",          "NIM_PWR_ON#",       "EN_NIM_USB#",
+				"EN_NIM_4V",         "EN_NIM_3.3V",       "NIM_TXD",           "NIM_RXD",
 				"EN_USB_HOST1_VBUS", "EN_USB_HOST2_VBUS", "MIKRO_TXD",         "MIKRO_RXD",
-				"MIKRO_SPI_CLK",     "MIKRO_SPI_CS_N",    "MIKRO_SPI_MISO",    "MIKRO_SPI_MOSI",
-				"MIKRO_RESET_N",     "MIKRO_AN",          "MIKRO_PWM",         "MIKRO_INT",
-				"EN_LS_OUT_1",       "EN_LS_OUT_2",       "EN_LS_OUT_3",       "EN_LS_OUT_4",
-				"EN_HS_SW",          "DIO_FAULT_N",       "NIM_STATUS",        "";
+				"MIKRO_SPI_CLK",     "MIKRO_SPI_CS#",     "MIKRO_SPI_MISO",    "MIKRO_SPI_MOSI",
+				"MIKRO_RESET#",      "MIKRO_AN",          "MIKRO_PWM",         "MIKRO_INT",
+				"MIKRO_I2C_SDA",     "MIKRO_I2C_SCL",     "",                  "",
+				"",                  "",                  "NIM_STATUS",        "";
 		};
 
 		fpga_gpio1: gpio@28000080 {
@@ -405,14 +409,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"EN_2ND_PORT_232",   "EN_CAN_1",     "EN_CAN_2",       "",
-				"USB_HUB_RESET#",    "PUSH_SW_N",    "",               "",
-				"",                  "",             "",               "",
-				"",                  "",             "",               "",
-				"",                  "",             "",               "",
-				"",                  "EN_ADC_3_12V", "EN_ADC_1_2_12V", "AN_SEL_0",
-				"AN_SEL_1",          "EN_CL_1_2",    "EN_CL_3",        "DP_RESET_PADN",
-				"NO_SCAP_CHRG_PADN", "EN_SPKR_AMP",  "BT_EN",          "WIFI_EN";
+				"EN_2ND_PORT_232", "EN_CAN_1#",    "EN_CAN_2#",      "",
+				"USB_HUB_RESET#",  "PUSH_SW#",     "",               "",
+				"",                "",             "",               "",
+				"",                "",             "",               "",
+				"",                "",             "AN_SEL_0",       "AN_SEL_1",
+				"AN_SEL_2",        "EN_ADC_3_12V", "EN_ADC_1_2_12V", "",
+				"",                "EN_CL_1_2",    "EN_CL_3",        "DP_RESET#",
+				"NO_SCAP_CHRG#",   "EN_SPKR_AMP",  "BT_EN",          "";
 		};
 
 		fpga_gpio2: gpio@280000c0 {
@@ -428,14 +432,14 @@
 			interrupt-controller;
 
 			gpio-line-names =
-				"MAGNET_IRQ",     "GYRO_IRQ",       "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "",
-				"",               "",               "",               "";
+				"MAGNET_IRQ",      "GYRO_IRQ",              "",            "",
+				"",                "",                      "",            "LPSPI4_SPIMUX_0",
+				"LPSPI4_SPIMUX_1", "LPSPI4_SPIMUX_2",       "",            "",
+				"",                "",                      "",            "CLEAR_FAULT",
+				"EN_HS_SW",        "EN_LS_OUT_1",           "EN_LS_OUT_2", "EN_LS_OUT_3",
+				"EN_LS_OUT_4",     "CIRCUIT_BREAKER_FAULT", "DIO_FAULT#",  "DIO_1_IN",
+				"DIO_2_IN",        "DIO_3_IN",              "DIO_4_IN",    "DC_1",
+				"DC_3",            "DC_5",                  "DC_7",        "DC_9";
 		};
 	};
 };
@@ -524,111 +528,6 @@
 	pinctrl-0 = <&pinctrl_lpi2c1>;
 	pinctrl-1 = <&pinctrl_lpi2c1>;
 	status = "okay";
-
-	max9860: max9860@10 {
-		compatible = "maxim,max9860";
-		reg = <0x10>;
-
-		AVDD-supply = <&reg_vref_1v8>;
-		DVDD-supply = <&reg_vref_1v8>;
-		DVDDIO-supply = <&reg_vref_3v3>;
-
-		clock-names = "mclk";
-		clocks = <&clk IMX93_CLK_CCM_CKO2>;
-
-		assigned-clocks = <&clk IMX93_CLK_CCM_CKO2>;
-		assigned-clock-parents = <&clk IMX93_CLK_24M>;
-		assigned-clock-rates = <24000000>;
-
-		#sound-dai-cells = <0>;
-	};
-
-	/* ST IIS2MDL (magnetometer) */
-	magnet: magnetometer@1e {
-		compatible = "st,lis2mdl";
-		reg = <0x1e>;
-		st,drdy-int-pin = <1>;
-		interrupt-parent = <&fpga_gpio2>;
-		interrupts = <0 IRQ_TYPE_EDGE_RISING>;
-	};
-
-	wizard: wizard@54 {
-		compatible = "technologic,wizard";
-		reg = <0x54>;
-
-		wizard_adc: adc {
-			compatible = "technologic,wizard-adc";
-			#io-channel-cells = <1>;
-		};
-
-		wizard_irq: irq {
-			compatible = "technologic,wizard-irq";
-			pinctrl-names = "default";
-			pinctrl-0 = <&pinctrl_wizirq>;
-
-			interrupt-parent = <&gpio4>;
-			interrupts = <29 IRQ_TYPE_LEVEL_HIGH>;
-
-			#interrupt-cells = <1>;
-			interrupt-controller;
-		};
-
-		wizard_silo: ups {
-			compatible = "technologic,wizard-silo";
-			interrupt-parent = <&wizard_irq>;
-			interrupts = <0>;
-		};
-
-		wizard_temp: temp {
-			compatible = "technologic,wizard-temp";
-			#io-channel-cells = <0>;
-		};
-
-		wizard_reset: reset {
-			compatible = "technologic,wizard-reset";
-		};
-	};
-
-	wizard_rtc: rtc@60 {
-		compatible = "technologic,wizard-rtc";
-		reg = <0x60>;
-		wakeup-source;
-	};
-
-	dp_bridge: dp-bridge@68 {
-		compatible = "toshiba,tc358767";
-		reg = <0x68>;
-		reset-gpios = <&fpga_gpio1 27 GPIO_ACTIVE_HIGH>;
-
-		clock-names = "ref";
-		clocks = <&clk_dp>;
-
-		toshiba,hpd-pin = <0>;
-		toshiba,hpd-active-low;
-		status = "okay";
-
-		ports {
-			#address-cells = <1>;
-			#size-cells = <0>;
-
-			port@0 {
-				reg = <0>;
-
-				dp_to_dsi: endpoint {
-					data-lanes = <1 2 3 4>;
-					remote-endpoint = <&dsi_to_dp>;
-				};
-			};
-		};
-	};
-
-	/* ST ISM330DLCTR (gyro/accelerometer) (ism6dhcx) */
-	ism330: gyro@6a {
-		compatible = "st,ism330dhcx";
-		reg = <0x6a>;
-		interrupt-parent = <&fpga_gpio2>;
-		interrupts = <1 IRQ_TYPE_EDGE_RISING>;
-	};
 };
 
 &dsi {
@@ -739,6 +638,107 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpi2c4>;
 	status = "okay";
+
+	max9860: max9860@10 {
+		compatible = "maxim,max9860";
+		reg = <0x10>;
+
+		AVDD-supply = <&reg_vref_1v8>;
+		DVDD-supply = <&reg_vref_1v8>;
+		DVDDIO-supply = <&reg_vref_3v3>;
+
+		clock-names = "mclk";
+		clocks = <&clk IMX93_CLK_CCM_CKO2>;
+
+		assigned-clocks = <&clk IMX93_CLK_CCM_CKO2>;
+		assigned-clock-parents = <&clk IMX93_CLK_24M>;
+		assigned-clock-rates = <24000000>;
+
+		#sound-dai-cells = <0>;
+	};
+
+	magnet: magnetometer@1e {
+		compatible = "st,iis2mdc";
+		reg = <0x1e>;
+		st,drdy-int-pin = <1>;
+		interrupt-parent = <&fpga_gpio2>;
+		interrupts = <0 IRQ_TYPE_EDGE_RISING>;
+	};
+
+	wizard: wizard@54 {
+		compatible = "technologic,wizard";
+		reg = <0x54>;
+
+		wizard_adc: adc {
+			compatible = "technologic,wizard-adc";
+			#io-channel-cells = <1>;
+		};
+
+		wizard_irq: irq {
+			compatible = "technologic,wizard-irq";
+			pinctrl-names = "default";
+			pinctrl-0 = <&pinctrl_wizirq>;
+
+			interrupt-parent = <&gpio4>;
+			interrupts = <29 IRQ_TYPE_LEVEL_HIGH>;
+
+			#interrupt-cells = <1>;
+			interrupt-controller;
+		};
+
+		wizard_silo: ups {
+			compatible = "technologic,wizard-silo";
+			interrupt-parent = <&wizard_irq>;
+			interrupts = <0>;
+		};
+
+		wizard_temp: temp {
+			compatible = "technologic,wizard-temp";
+			#io-channel-cells = <0>;
+		};
+
+		wizard_reset: reset {
+			compatible = "technologic,wizard-reset";
+		};
+	};
+
+	wizard_rtc: rtc@60 {
+		compatible = "technologic,wizard-rtc";
+		reg = <0x60>;
+		wakeup-source;
+	};
+
+	dp_bridge: dp-bridge@68 {
+		compatible = "toshiba,tc358767";
+		reg = <0x68>;
+		reset-gpios = <&fpga_gpio1 27 GPIO_ACTIVE_HIGH>;
+
+		clock-names = "ref";
+		clocks = <&clk_dp>;
+
+		toshiba,hpd-pin = <0>;
+
+		ports {
+			#address-cells = <1>;
+			#size-cells = <0>;
+
+			port@0 {
+				reg = <0>;
+
+				dp_to_dsi: endpoint {
+					data-lanes = <1 2 3 4>;
+					remote-endpoint = <&dsi_to_dp>;
+				};
+			};
+		};
+	};
+
+	ism330: gyro@6a {
+		compatible = "st,ism330dhcx";
+		reg = <0x6a>;
+		interrupt-parent = <&fpga_gpio2>;
+		interrupts = <1 IRQ_TYPE_EDGE_RISING>;
+	};
 };
 
 &lpspi4 {
@@ -908,25 +908,14 @@
 	status = "okay";
 };
 
-/* 43810000.gpio */
-&gpio2 {
-	gpio-line-names =
-		"GPIO_00",      "GPIO_01",      "GPIO_02", "GPIO_03", "GPIO_04",
-		"GPIO_05",      "GPIO_06",      "GPIO_07", "GPIO_08", "GPIO_09",
-		"RS485_1_TXEN", "RS485_2_TXEN", "GPIO_12", "GPIO_13", "GPIO_14",
-		"GPIO_15",      "GPIO_16",      "GPIO_17", "GPIO_18", "GPIO_19",
-		"GPIO_20",      "GPIO_21";
-};
-
-/* 43830000.gpio */
 &gpio4 {
 	gpio-line-names =
-		"",          "",          "",         "",         "",
-		"",          "",          "",         "",         "",
-		"",          "",          "",         "",         "",
-		"",          "",          "",         "",         "",
-		"",          "",          "",         "",         "",
-		"",          "",          "",         "FPGA_IRQ", "POWER_FAIL";
+		"",          "",          "",             "",         "",
+		"",          "",          "",             "",         "",
+		"",          "",          "",             "",         "",
+		"",          "",          "",             "",         "",
+		"",          "",          "",             "",         "",
+		"",          "",          "FPGA_CPU_IRQ", "WIZ_IRQ",  "";
 };
 
 &iomuxc {
@@ -1015,7 +1004,6 @@
 		>;
 	};
 
-	/* CAN1 is taken from micfil/i2s audio */
 	pinctrl_flexcan1: flexcan1grp {
 		fsl,pins = <
 			MX93_PAD_PDM_CLK__CAN1_TX		0x139e
@@ -1023,7 +1011,6 @@
 		>;
 	};
 
-	/* JTAG_CPU_TDI & TDO are unavailable when CAN2 is configured */
 	pinctrl_flexcan2: flexcan2grp {
 		fsl,pins = <
 			MX93_PAD_DAP_TDI__CAN2_TX		0x139e
@@ -1063,7 +1050,7 @@
 
 	pinctrl_fec_phy: fecphygrp {
 		fsl,pins = <
-			MX93_PAD_GPIO_IO29__GPIO2_IO29				0x1306
+			MX93_PAD_GPIO_IO29__GPIO2_IO29			0x1306
 		>;
 	};
 
@@ -1088,7 +1075,7 @@
 
 	pinctrl_fpga_irq: fpgairqgrp {
 		fsl,pins = <
-			MX93_PAD_CCM_CLKO3__GPIO4_IO28		0x40000b9e
+			MX93_PAD_CCM_CLKO3__GPIO4_IO28			0x40000b9e
 		>;
 	};
 
@@ -1144,6 +1131,7 @@
 		fsl,pins = <
 			MX93_PAD_GPIO_IO08__LPUART7_TX			0x31e
 			MX93_PAD_GPIO_IO09__LPUART7_RX			0x31e
+			MX93_PAD_GPIO_IO10__LPUART7_CTS_B		0x31e
 			MX93_PAD_GPIO_IO11__LPUART7_RTS_B		0x31e
 		>;
 	};
@@ -1287,12 +1275,6 @@
 		>;
 	};
 
-	pinctrl_wdog: wdoggrp {
-		fsl,pins = <
-			MX93_PAD_WDOG_ANY__WDOG1_WDOG_ANY	0x82
-		>;
-	};
-
 	pinctrl_wizirq: wizard-irqgrp {
 		fsl,pins = <
 			MX93_PAD_CCM_CLKO4__GPIO4_IO29		0x4000019e
@@ -1301,8 +1283,6 @@
 };
 
 &wdog3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_wdog>;
 	status = "okay";
 };
 
