@@ -344,7 +344,7 @@
 //};
 
 &aips2 {
-	fpga@425e0000 {
+	fpga: fpga@425e0000 {
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "nxp,imx93-fspi", "nxp,imx8mm-fspi";
