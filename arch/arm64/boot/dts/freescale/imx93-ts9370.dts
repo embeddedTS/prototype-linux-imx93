@@ -159,6 +159,16 @@
 		enable-active-high;
 	};
 
+	reg_usdhc3_vmmc: regulator-usdhc3 {
+		compatible = "regulator-fixed";
+		regulator-name = "WLAN_EN";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		gpio = <&fpga_gpio1 30 GPIO_ACTIVE_LOW>;
+		startup-delay-us = <70000>;
+		enable-active-high;
+	};
+
 	reg_vref_1v8: regulator-adc-vref {
 		compatible = "regulator-fixed";
 		regulator-name = "vref_1v8";
@@ -217,12 +227,6 @@
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
 		#io-channel-cells = <0>;
-	};
-
-	sdio_pwrseq: sdio-pwrseq {
-		compatible = "mmc-pwrseq-simple";
-		pinctrl-names = "default";
-		reset-gpios = <&fpga_gpio1 31 GPIO_ACTIVE_LOW>;
 	};
 
 	sound-max9860 {
@@ -812,7 +816,7 @@
 	pinctrl-0 = <&pinctrl_usdhc3>;
 	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
 	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
-	mmc-pwrseq = <&sdio_pwrseq>;
+	vmmc-supply = <&reg_usdhc3_vmmc>;
 	bus-width = <4>;
 	keep-power-in-suspend;
 	non-removable;
