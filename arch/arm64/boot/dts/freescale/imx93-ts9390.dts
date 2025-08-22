@@ -259,16 +259,34 @@
 		reset-gpios = <&fpga_gpio1 31 GPIO_ACTIVE_LOW>;
 	};
 
-	sound-tac5111 {
+        amp_reg: amp-supply {
+                compatible = "regulator-fixed";
+                regulator-name = "amp-enable";
+                gpio = <&fpga_gpio1 29 GPIO_ACTIVE_HIGH>;
+                enable-active-high;
+        };
+
+	imx_tac5111: sound-tac5111 {
 		compatible = "fsl,imx-audio-card";
 		model = "imx-tac5111";
-		status = "okay";
+                amp-enable-supply = <&amp_reg>;
+		simple-audio-card,widgets =
+			"Microphone", "Line In",
+			"Headphone", "Line Out",
+			"Speaker", "Speaker Ext";
+                simple-audio-card,routing =
+                	"AIN1", "Line In",
+			"Line Out", "OUT1",
+			"Speaker Ext", "AMPVDD",
+                	"AMPVDD", "amp-enable";
+
 		pri-dai-link {
 			link-name = "tac5111";
 			format = "i2s";
-			fsl,mclk-equal-bclk;
 			cpu {
 				sound-dai = <&sai1>;
+                                bitclock-master;
+                                frame-master;
 			};
 			codec {
 				sound-dai = <&tac5x1x>;
@@ -666,8 +684,8 @@
 		iovdd-supply = <&reg_vref_3v3>;
 		ti,vref = <0>;
 		ti,micbias-vg = <3>;  /* make it same as AVDD */
-		ti,gpios-func = <0>, <0>, <0>;
 		ti,gpi1-func = <0>;
+		ti,gpios-func = <0>, <0>, <0>;
 		ti,gpios-drive = <0>, <0>, <0>;
 		ti,gpa-gpio = <0>;
 		ti,in-ch-en = <1>;
@@ -835,9 +853,10 @@
 
 	assigned-clocks = <&clk IMX93_CLK_SAI1>;
 	assigned-clock-parents = <&clk IMX93_CLK_AUDIO_PLL>;
-	assigned-clock-rates = <12288000>;
+	/* assigned-clock-rates = <12288000>; */
+	assigned-clock-rates = <1536000>;
 
-	fsl,sai-asynchronous;
+	fsl,sai-mclk-direction-output;
 	status = "okay";
 };
 
@@ -1086,9 +1105,9 @@
 
 	pinctrl_sai1: sai1grp {
 		fsl,pins = <
-			MX93_PAD_SAI1_TXFS__SAI1_TX_SYNC		0x31e
-			MX93_PAD_SAI1_TXC__SAI1_TX_BCLK			0x31e
-			MX93_PAD_SAI1_TXD0__SAI1_TX_DATA00		0x31e
+			MX93_PAD_SAI1_TXFS__SAI1_TX_SYNC		0x302
+			MX93_PAD_SAI1_TXC__SAI1_TX_BCLK 		0x306
+			MX93_PAD_SAI1_TXD0__SAI1_TX_DATA00		0x302
 			MX93_PAD_SAI1_RXD0__SAI1_RX_DATA00		0x31e
 		>;
 	};
