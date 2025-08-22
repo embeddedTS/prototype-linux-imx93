@@ -683,6 +683,7 @@
 		avdd-supply = <&reg_vref_3v3>;
 		iovdd-supply = <&reg_vref_3v3>;
 		ti,vref = <0>;
+                ti,adc1-impedance = <0>;
 		ti,micbias-vg = <3>;  /* make it same as AVDD */
 		ti,gpi1-func = <0>;
 		ti,gpios-func = <0>, <0>, <0>;
