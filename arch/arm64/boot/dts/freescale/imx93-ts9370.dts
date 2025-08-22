@@ -142,6 +142,13 @@
 		#io-channel-cells = <0>;
 	};
 
+        clk_codec: clk-codec {
+                compatible = "fixed-clock";
+                #clock-cells = <0>;
+		clocks = <&clk IMX93_CLK_CCM_CKO2>;
+                clock-frequency = <24000000>;
+        };
+
 	clk_dp: clk-dp {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -330,13 +337,19 @@
 		pri-dai-link {
 			link-name = "tac5111";
 			format = "i2s";
+                        bitclock-master = <&tac5x1x>;
+                        frame-master = <&tac5x1x>;
+
+	                clock-names = "mclk";
+	                clocks = <&clk_codec>;
+
 			cpu {
 				sound-dai = <&sai1>;
-                                bitclock-master;
-                                frame-master;
 			};
 			codec {
 				sound-dai = <&tac5x1x>;
+                                bitclock-master;
+                                frame-master;
 			};
 		};
 	};
@@ -683,10 +696,11 @@
 		#sound-dai-cells = <0>;
 		avdd-supply = <&reg_vref_1v8>;
 		iovdd-supply = <&reg_vref_1v8>;
+
 		ti,vref = <0>;
                 ti,adc1-impedance = <0>;
 		ti,micbias-vg = <3>;  /* make it same as AVDD */
-		ti,gpi1-func = <0>;
+		ti,gpi1-func = <1>;
 		ti,gpios-func = <0>, <0>, <0>;
 		ti,gpios-drive = <0>, <0>, <0>;
 		ti,gpa-gpio = <0>;
