@@ -270,9 +270,7 @@ snd-soc-sta350-objs := sta350.o
 snd-soc-sta529-objs := sta529.o
 snd-soc-stac9766-objs := stac9766.o
 snd-soc-sti-sas-objs := sti-sas.o
-snd-soc-tac5x1x-objs := tac5x1x/tac5x1x.o \
-			tac5x1x/tac5x1x-i2c.o \
-			tac5x1x/tac5x1x-irq.o
+snd-soc-tac5x1x-objs := tac5x1x/tac5x1x-i2c.o
 snd-soc-tas5086-objs := tas5086.o
 snd-soc-tas571x-objs := tas571x.o
 snd-soc-tas5720-objs := tas5720.o
