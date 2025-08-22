@@ -93,14 +93,14 @@
 
 		led-0 {
 			color = <LED_COLOR_ID_GREEN>;
-			function = LED_FUNCTION_INDICATOR;
+			function = LED_FUNCTION_POWER;
 			gpios = <&fpga_gpio0 0 GPIO_ACTIVE_LOW>;
 			default-state = "on";
 		};
 
 		led-1 {
 			color = <LED_COLOR_ID_RED>;
-			function = LED_FUNCTION_INDICATOR;
+			function = LED_FUNCTION_STATUS;
 			gpios = <&fpga_gpio0 1 GPIO_ACTIVE_LOW>;
 			default-state = "off";
 		};
