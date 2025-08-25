@@ -302,7 +302,7 @@
 			&fpga_gpio0 24 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN) /* SDA */
 			&fpga_gpio0 25 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN) /* SCL */
 		>;
-		i2c-gpio,delay-us = <2>; /* ~100hz */
+		i2c-gpio,delay-us = <4>; /* ~92hz */
 		status = "okay";
 	};
 
