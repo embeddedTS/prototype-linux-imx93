@@ -444,6 +444,14 @@
 				"DIO_2_IN",        "DIO_3_IN",              "DIO_4_IN",    "DC_1",
 				"DC_3",            "DC_5",                  "DC_7",        "DC_9";
 		};
+
+		fpga_pwm0: pwm@28000400 {
+			compatible = "technologic,pwm32";
+			reg = <0x400 0x20>;
+			clocks = <&clk IMX93_CLK_FLEXSPI1>;
+			clock-names = "fspi";
+			#pwm-cells = <2>;
+		};
 	};
 };
 
