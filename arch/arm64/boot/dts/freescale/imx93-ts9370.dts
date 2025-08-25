@@ -23,6 +23,7 @@
 		gpio4 = &fpga_gpio0;
 		gpio5 = &fpga_gpio1;
 		gpio6 = &fpga_gpio2;
+		i2c8 = &mikrobus_i2c_gpio;
 	};
 
 	reserved-memory {
@@ -291,6 +292,18 @@
 		output-ohms = <75000>; /* R2: 75k */
 		full-ohms = <150000>;  /* R1 (75k) + R2 (75k) */
 		#io-channel-cells = <0>;
+	};
+
+	mikrobus_i2c_gpio: i2c-gpio {
+		compatible = "i2c-gpio";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		gpios = <
+			&fpga_gpio0 24 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN) /* SDA */
+			&fpga_gpio0 25 (GPIO_ACTIVE_HIGH|GPIO_OPEN_DRAIN) /* SCL */
+		>;
+		i2c-gpio,delay-us = <2>; /* ~100hz */
+		status = "okay";
 	};
 
 	sound-max9860 {
