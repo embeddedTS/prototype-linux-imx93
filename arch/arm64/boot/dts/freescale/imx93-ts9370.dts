@@ -142,13 +142,6 @@
 		#io-channel-cells = <0>;
 	};
 
-        clk_codec: clk-codec {
-                compatible = "fixed-clock";
-                #clock-cells = <0>;
-		clocks = <&clk IMX93_CLK_CCM_CKO2>;
-                clock-frequency = <24000000>;
-        };
-
 	clk_dp: clk-dp {
 		compatible = "fixed-clock";
 		#clock-cells = <0>;
@@ -337,14 +330,11 @@
 		pri-dai-link {
 			link-name = "tac5111";
 			format = "i2s";
-                        bitclock-master = <&tac5x1x>;
-                        frame-master = <&tac5x1x>;
-
-	                clock-names = "mclk";
-	                clocks = <&clk_codec>;
 
 			cpu {
 				sound-dai = <&sai1>;
+                                bitclock-master;
+                                frame-master;
 			};
 			codec {
 				sound-dai = <&tac5x1x>;
@@ -878,7 +868,7 @@
 	/* assigned-clock-rates = <12288000>; */
 	assigned-clock-rates = <1536000>;
 
-	fsl,sai-asynchronous;
+	fsl,sai-mclk-direction-output;
 	status = "okay";
 };
 
