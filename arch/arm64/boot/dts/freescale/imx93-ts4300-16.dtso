@@ -30,7 +30,7 @@
 	status = "okay";
 
 	spifram: eeprom@0 {
-		compatible = "atmel,at25", "cypress,fm25l16b";
+		compatible = "atmel,at25";
 		reg = <0>;
 		spi-max-frequency = <2000000>;
 		size = <0x800>;
