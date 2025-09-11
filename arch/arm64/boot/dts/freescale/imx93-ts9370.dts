@@ -843,6 +843,11 @@
 	pinctrl-0 = <&pinctrl_uart6>;
 	uart-has-rtscts;
 	status = "okay";
+
+	bluetooth {
+		compatible = "nxp,88w8987-bt";
+		fw-init-baudrate = <3000000>;
+	};
 };
 
 &lpuart7 {
