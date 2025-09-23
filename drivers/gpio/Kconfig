@@ -801,6 +801,7 @@ config GPIO_LOONGSON1
 config GPIO_TS9370_DRIVER
 	tristate "embeddedTS TS-9370 GPIO Support"
 	select GPIO_GENERIC
+	select GPIOLIB_IRQCHIP
 	default n
 	help
 	  Say yes here to support GPIO on the embeddedTS i.MX93 products.
