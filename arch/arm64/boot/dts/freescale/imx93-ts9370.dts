@@ -76,11 +76,11 @@
 			no-map;
 		};
 
-                ethosu_mem: ethosu-reserved@a5000000 {
-                        compatible = "shared-dma-pool";
-                        reg = <0x0 0xa5000000 0x0 0x10000000>;  /* 256 MB */
-                        reusable;
-                };
+		ethosu_mem: ethosu-reserved@a5000000 {
+			compatible = "shared-dma-pool";
+			reg = <0x0 0xa5000000 0x0 0x10000000>;  /* 256 MB */
+			reusable;
+		};
 	};
 
 	ethosu@50040000 {
@@ -306,26 +306,26 @@
 		status = "okay";
 	};
 
-        amp_reg: amp-supply {
-                compatible = "regulator-fixed";
-                regulator-name = "amp-enable";
-                gpio = <&fpga_gpio1 29 GPIO_ACTIVE_HIGH>;
-                enable-active-high;
-        };
+	amp_reg: amp-supply {
+		compatible = "regulator-fixed";
+		regulator-name = "amp-enable";
+		gpio = <&fpga_gpio1 29 GPIO_ACTIVE_HIGH>;
+		enable-active-high;
+	};
 
 	imx_tac5111: sound-tac5111 {
 		compatible = "fsl,imx-audio-card";
 		model = "imx-tac5111";
-                amp-enable-supply = <&amp_reg>;
+		amp-enable-supply = <&amp_reg>;
 		simple-audio-card,widgets =
 			"Microphone", "Line In",
 			"Headphone", "Line Out",
 			"Speaker", "Speaker Ext";
-                simple-audio-card,routing =
-                	"AIN1", "Line In",
+		simple-audio-card,routing =
+			"AIN1", "Line In",
 			"Line Out", "OUT1",
 			"Speaker Ext", "AMPVDD",
-                	"AMPVDD", "amp-enable";
+			"AMPVDD", "amp-enable";
 
 		pri-dai-link {
 			link-name = "tac5111";
@@ -333,13 +333,13 @@
 
 			cpu {
 				sound-dai = <&sai1>;
-                                bitclock-master;
-                                frame-master;
+				bitclock-master;
+				frame-master;
 			};
 			codec {
 				sound-dai = <&tac5x1x>;
-                                bitclock-master;
-                                frame-master;
+				bitclock-master;
+				frame-master;
 			};
 		};
 	};
@@ -688,7 +688,7 @@
 		iovdd-supply = <&reg_vref_1v8>;
 
 		ti,vref = <0>;
-                ti,adc1-impedance = <0>;
+		ti,adc1-impedance = <0>;
 		ti,micbias-vg = <3>;  /* make it same as AVDD */
 		ti,gpi1-func = <1>;
 		ti,gpios-func = <0>, <0>, <0>;
@@ -1048,8 +1048,8 @@
 
 	pinctrl_flexspi: flexspigrp {
 		fsl,pins = <
-			MX93_PAD_SD3_CMD__FLEXSPI1_A_SS0_B      0x42
-			MX93_PAD_SD3_CLK__FLEXSPI1_A_SCLK       0x42
+			MX93_PAD_SD3_CMD__FLEXSPI1_A_SS0_B	0x42
+			MX93_PAD_SD3_CLK__FLEXSPI1_A_SCLK	0x42
 			MX93_PAD_SD3_DATA0__FLEXSPI1_A_DATA00   0x42
 			MX93_PAD_SD3_DATA1__FLEXSPI1_A_DATA01   0x42
 			MX93_PAD_SD3_DATA2__FLEXSPI1_A_DATA02   0x42
@@ -1090,14 +1090,14 @@
 			MX93_PAD_ENET2_RD1__GPIO4_IO25			0x51e
 			MX93_PAD_ENET2_RD2__GPIO4_IO26			0x51e
 			MX93_PAD_ENET2_RD3__GPIO4_IO27			0x51e
-			MX93_PAD_ENET2_RXC__GPIO4_IO23                  0x51e
+			MX93_PAD_ENET2_RXC__GPIO4_IO23			0x51e
 			MX93_PAD_ENET2_RX_CTL__GPIO4_IO22		0x51e
 			MX93_PAD_ENET2_TD0__GPIO4_IO19			0x51e
 			MX93_PAD_ENET2_TD1__GPIO4_IO18			0x51e
 			MX93_PAD_ENET2_TD2__GPIO4_IO17			0x51e
 			MX93_PAD_ENET2_TD3__GPIO4_IO16			0x51e
-			MX93_PAD_ENET2_TXC__GPIO4_IO21                  0x51e
-			MX93_PAD_ENET2_TX_CTL__GPIO4_IO20               0x51e
+			MX93_PAD_ENET2_TXC__GPIO4_IO21			0x51e
+			MX93_PAD_ENET2_TX_CTL__GPIO4_IO20		0x51e
 		>;
 	};
 
@@ -1110,7 +1110,7 @@
 	pinctrl_sai1: sai1grp {
 		fsl,pins = <
 			MX93_PAD_SAI1_TXFS__SAI1_TX_SYNC		0x302
-			MX93_PAD_SAI1_TXC__SAI1_TX_BCLK 		0x306
+			MX93_PAD_SAI1_TXC__SAI1_TX_BCLK			0x306
 			MX93_PAD_SAI1_TXD0__SAI1_TX_DATA00		0x302
 			MX93_PAD_SAI1_RXD0__SAI1_RX_DATA00		0x31e
 		>;
