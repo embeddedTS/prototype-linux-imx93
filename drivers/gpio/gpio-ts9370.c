@@ -40,7 +40,6 @@ struct ts9370_gpio_priv {
 	struct gpio_chip chip;
 	struct irq_chip irqchip;
 	raw_spinlock_t lock;
-	uint32_t npol;
 	int irq;
 };
 
