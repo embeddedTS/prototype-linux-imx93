@@ -169,6 +169,13 @@
 		pinctrl-0 = <&pinctrl_wifi_pwr>;
 		reset-gpios = <&gpio2 17 GPIO_ACTIVE_LOW>;
 	};
+
+	video_mux: mux-controller {
+		compatible = "gpio-mux";
+		#mux-state-cells = <0>;
+		mux-gpios = <&fpga_gpio0 7 GPIO_ACTIVE_HIGH>;
+		idle-state = <0>;
+	};
 };
 
 &aips2 {
