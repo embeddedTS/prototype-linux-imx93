@@ -286,6 +286,11 @@
 				"DIO_85", "DIO_86", "DIO_87", "DIO_88", "DIO_89",
 				"DIO_90";
 		};
+
+		fpga_xbar: pinctrl@28002000 {
+			compatible = "technologic,ts9370-xbar";
+			reg = <0x2000 0x200>;
+		};
 	};
 };
 
