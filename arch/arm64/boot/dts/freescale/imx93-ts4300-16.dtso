@@ -7,19 +7,24 @@
 /plugin/;
 #include <dt-bindings/gpio/gpio.h>
 
-/ {
-	fragment@4 {
-		target-path = "/";
-		__overlay__ {
-			model = "embeddedTS TS-4300 (TS-8551)";
-			compatible = "technologic,ts4300-ts8551", "technologic,ts4300", "fsl,imx93";
-		};
-	};
-	fragment@5 {
-		target = <&wizard_silo>;
-		__overlay__ {
-			status = "enabled";
-		};
+&{/} {
+    model = "embeddedTS TS-4300 (TS-8551)";
+	compatible = "technologic,ts4300-ts8551", "technologic,ts4300", "fsl,imx93";
+};
+
+&flexcan1 {
+	status = "okay";
+};
+
+&lpi2c1 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	/* Recommend using the TS-4300's built in RTC with this SOM */
+	m41t00s: rtc@68 {
+		compatible = "st,m41t00";
+		reg = <0x68>;
+		status = "disabled";
 	};
 };
 
@@ -39,24 +44,12 @@
 	};
 };
 
-&flexcan1 {
-	status = "okay";
-};
-
-&lpi2c1 {
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	/* Recommend using the TS-4300's built in RTC with this SOM */
-	m41t00s: rtc@68 {
-		compatible = "st,m41t00";
-		reg = <0x68>;
-		status = "disabled";
-	};
-};
-
 &lpuart2 {
 	uart-has-rtscts;
 	rts-gpios = <&fpga_gpio3 14 GPIO_ACTIVE_LOW>;
 	linux,rs485-enabled-at-boot-time;
+};
+
+&wizard_silo {
+	status = "okay";
 };
