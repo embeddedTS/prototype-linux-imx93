@@ -540,6 +540,7 @@
 	num-cs = <1>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_lpspi4>;
+	cs-gpios = <&gpio2 18 GPIO_ACTIVE_LOW>;
 	status = "okay";
 };
 
@@ -786,7 +787,7 @@
 			MX93_PAD_GPIO_IO21__LPSPI4_SCK		0x3fe
 			MX93_PAD_GPIO_IO20__LPSPI4_SOUT		0x3fe
 			MX93_PAD_GPIO_IO19__LPSPI4_SIN		0x3fe
-			MX93_PAD_GPIO_IO18__LPSPI4_PCS0		0x3fe
+			MX93_PAD_GPIO_IO18__GPIO2_IO18		0x3fe
 		>;
 	};
 
