@@ -446,11 +446,11 @@ dtb-$(CONFIG_ARCH_MXC) += imx93-tqma9352-mba93xxla.dtb
 imx93-ts4300-16-dtbs := imx93-ts4300.dtb imx93-ts4300-16.dtbo
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16.dtb
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16.dtbo
+dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16-mipi2dp.dtbo
 
 imx93-ts4300-16-mipi2dp-dtbs := imx93-ts4300.dtb \
-				      imx93-ts4300-16.dtbo \
-				      imx93-ts4300-16-mipi2dp.dtbo
-dtb-$(CONFIG_ARCH_MXC) += imx93-ts4300-16-mipi2dp.dtb
+			        imx93-ts4300-16.dtbo \
+			        imx93-ts4300-16-mipi2dp.dtbo
 
 DTC_FLAGS_imx93-ts4300 := -@
 dtb-$(CONFIG_ARCH_MXC) += imx93-ts9370.dtb \
