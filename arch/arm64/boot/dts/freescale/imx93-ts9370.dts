@@ -462,7 +462,7 @@
 				"LPSPI4_SPIMUX_1", "LPSPI4_SPIMUX_2",       "",            "",
 				"",                "",                      "",            "CLEAR_FAULT",
 				"EN_HS_SW",        "EN_LS_OUT_1",           "EN_LS_OUT_2", "EN_LS_OUT_3",
-				"EN_LS_OUT_4",     "CIRCUIT_BREAKER_FAULT", "DIO_FAULT#",  "DIO_1_IN",
+				"EN_LS_OUT_4",     "CIRCUIT_BREAKER_FAULT", "",            "DIO_1_IN",
 				"DIO_2_IN",        "DIO_3_IN",              "DIO_4_IN",    "DC_1",
 				"DC_3",            "DC_5",                  "DC_7",        "DC_9";
 		};
